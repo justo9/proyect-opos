@@ -386,6 +386,10 @@ const firebaseConfig = {
   appId: "1:717317628930:web:a3f47ac2b6d8377715331b"
 };
 
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
 // ── DATOS ESTÁTICOS ──────────────────────────────────────────
 const SECCIONES = [
   { id:'tecnica',         label:'Técnica',         icon:'🎼', color:'#2d4a6b' },
