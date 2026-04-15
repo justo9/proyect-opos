@@ -794,25 +794,25 @@ function renderObras(){
     card.className = 's-card open';
     card.style.marginBottom = '12px';
 
-    const videosHtml = videos.length ? `
+    const videosHtml = `
       <div class="s-card" style="margin-top:10px;margin-bottom:0">
         <div class="s-card-hdr" style="padding:10px 14px" onclick="this.closest('.s-card').classList.toggle('open')">
           <div class="s-card-icon" style="background:#1a2a3a;font-size:13px;width:28px;height:28px">▶</div>
           <div class="s-card-title" style="font-size:15px">Versiones de referencia</div>
-          <span class="s-card-count">${videos.length} vídeo${videos.length>1?'s':''}</span>
+          <span class="s-card-count">${videos.length ? videos.length+' vídeo'+(videos.length>1?'s':'') : 'sin contenido'}</span>
           <span class="chevron">▾</span>
         </div>
         <div class="s-card-body">
-          ${videos.map((v,i)=>`
+          ${videos.length ? videos.map((v,i)=>`
             <div style="margin-bottom:12px">
               ${v.label?`<div class="yt-label">${v.label}</div>`:''}
               <div class="yt-embed-wrap">
                 <iframe src="https://www.youtube-nocookie.com/embed/${v.id}" allowfullscreen loading="lazy"></iframe>
               </div>
               ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px" onclick="removeObraVideo('${obra.id}',${i})">🗑 Eliminar</button>`:''}
-            </div>`).join('')}
+            </div>`).join('') : '<div class="empty">El profesor aún no ha añadido vídeos.</div>'}
         </div>
-      </div>` : '';
+      </div>`;
 
     const addVideoHtml = isProf ? `
       <div class="yt-section" style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
@@ -825,25 +825,25 @@ function renderObras(){
       </div>` : '';
 
     const ejs = getObraEjercicios(obra.id);
-    const ejerciciosHtml = ejs.length ? `
+    const ejerciciosHtml = `
       <div class="s-card" style="margin-top:10px;margin-bottom:0">
         <div class="s-card-hdr" style="padding:10px 14px" onclick="this.closest('.s-card').classList.toggle('open')">
           <div class="s-card-icon" style="background:#1a3020;font-size:14px;width:28px;height:28px">✎</div>
           <div class="s-card-title" style="font-size:15px">Ejercicios</div>
-          <span class="s-card-count">${ejs.length} imagen${ejs.length>1?'es':''}</span>
+          <span class="s-card-count">${ejs.length ? ejs.length+' imagen'+(ejs.length>1?'es':'') : 'sin contenido'}</span>
           <span class="chevron">▾</span>
         </div>
         <div class="s-card-body">
-          ${ejs.map((e,i)=>`
+          ${ejs.length ? ejs.map((e,i)=>`
             <div style="margin-bottom:14px">
               ${e.label?`<div class="yt-label">${e.label}</div>`:''}
               <img src="${e.src}" alt="${e.label||'Ejercicio '+(i+1)}"
                 style="width:100%;border-radius:var(--r-sm);border:1px solid var(--border);display:block"/>
               ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px;margin-top:6px"
                 onclick="removeObraEjercicio('${obra.id}',${i})">🗑 Eliminar</button>`:''}
-            </div>`).join('')}
+            </div>`).join('') : '<div class="empty">El profesor aún no ha añadido ejercicios.</div>'}
         </div>
-      </div>` : '';
+      </div>`;
 
     const addEjercicioHtml = isProf ? `
       <div class="yt-section" style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
