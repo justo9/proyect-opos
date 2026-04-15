@@ -294,7 +294,10 @@
 <!-- ══ ALUMNO APP ══ -->
 <div id="s-app" class="screen">
   <div class="app-hdr">
-    <div><div class="hdr-brand">Aula de Saxofón</div><div class="hdr-sub">RAMÓN GARAY · JAÉN</div></div>
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <div class="hdr-brand">Aula de Saxofón</div>
+      <div class="hdr-sub" id="hdr-alumno-name" style="font-size:12px;color:var(--gold);letter-spacing:.3px"></div>
+    </div>
     <button class="btn-out" onclick="logout()">Salir</button>
   </div>
   <div class="nav-tabs">
@@ -522,6 +525,7 @@ function showAlumnoApp(){
   document.getElementById('alu-name').textContent = d.nombre || 'Alumno';
   document.getElementById('alu-avatar').textContent = (d.nombre||'A')[0].toUpperCase();
   document.getElementById('alu-trimestre').textContent = (d.trimestre||1)+'.º Trimestre';
+  document.getElementById('hdr-alumno-name').textContent = d.nombre || '';
   showScreen('s-app');
   renderSecciones();
   renderTonalidades();
