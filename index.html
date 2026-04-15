@@ -314,10 +314,10 @@
     <div id="form-alu">
       <div class="f-label" style="text-align:center;margin-bottom:10px">Introduce tu PIN</div>
       <div class="pin-row">
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p0"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p1"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p2"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p3"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" id="p0"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" id="p1"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" id="p2"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" id="p3"/>
       </div>
       <button class="btn-primary" onclick="loginAlumno()">Entrar</button>
     </div>
@@ -1665,9 +1665,10 @@ const origShowAlumno = window.loginAlumno;
 window._loadEventosYMostrar = async () => { await loadEventos(); renderCalendario(); };
 
 // Limpiar PIN al cargar (evitar autocompletado del navegador)
-document.addEventListener('DOMContentLoaded', () => {
-  [0,1,2,3].forEach(i => { const el = document.getElementById('p'+i); if(el) el.value = ''; });
-});
+const _clearPin = () => [0,1,2,3].forEach(i => { const el = document.getElementById('p'+i); if(el) el.value = ''; });
+document.addEventListener('DOMContentLoaded', _clearPin);
+setTimeout(_clearPin, 300);
+setTimeout(_clearPin, 800);
 
 // service worker
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
