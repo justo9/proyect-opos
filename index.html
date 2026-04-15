@@ -294,9 +294,12 @@
 <!-- ══ ALUMNO APP ══ -->
 <div id="s-app" class="screen">
   <div class="app-hdr">
-    <div style="display:flex;align-items:baseline;gap:10px">
-      <div class="hdr-brand">Aula de Saxofón</div>
-      <div class="hdr-sub" id="hdr-alumno-name" style="font-size:12px;color:var(--gold);letter-spacing:.3px"></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="alumno-avatar" id="hdr-avatar" style="width:32px;height:32px;font-size:15px;display:none">?</div>
+      <div>
+        <div class="hdr-brand">Aula de Saxofón</div>
+        <div id="hdr-alumno-name" style="font-size:11px;color:var(--gold);letter-spacing:.3px;margin-top:1px"></div>
+      </div>
     </div>
     <button class="btn-out" onclick="logout()">Salir</button>
   </div>
@@ -312,14 +315,9 @@
 
   <!-- TÉCNICA -->
   <div id="t-tecnica" class="tab-content active">
-    <div class="alumno-hero">
-      <div class="alumno-avatar" id="alu-avatar">?</div>
-      <div><div class="alumno-name" id="alu-name">Cargando…</div><div class="alumno-curso">6.º Enseñanzas Profesionales · Saxofón</div></div>
-      <div class="trimestre-badge" id="alu-trimestre">1.º Trimestre</div>
-    </div>
 
     <!-- Grid de tonalidades -->
-    <div class="s-card" style="margin-bottom:12px">
+    <div class="s-card open" style="margin-bottom:12px">
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
         <div class="s-card-icon" style="background:#2d3a50;font-size:18px">♭♯</div>
         <div class="s-card-title">Tonalidades</div>
@@ -444,7 +442,6 @@ const db   = getFirestore(app);
 // ── DATOS ESTÁTICOS ──────────────────────────────────────────
 const SECCIONES = [
   { id:'tecnica',         label:'Técnica',         icon:'🎼', color:'#2d4a6b' },
-  { id:'estudios',        label:'Estudios',         icon:'📖', color:'#2d5a4a' },
   { id:'obras',           label:'Obras',            icon:'🎷', color:'#4a3060' },
   { id:'transcripciones', label:'Transcripciones',  icon:'✍️', color:'#5a3a20' },
 ];
@@ -459,6 +456,27 @@ const TECNICAS = [
   { id:'slap',           name:'Slap',                 desc:'Golpe percusivo de lengua',           icon:'✦',  color:'#3d1a1a' },
   { id:'microtonalidad', name:'Microtonalidad',       desc:'Alturas entre semitonos',             icon:'±',  color:'#1a3d20' },
   { id:'respiracion',    name:'Respiración circular', desc:'Sonido continuo sin pausas',          icon:'∞',  color:'#2a2a2a' },
+];
+
+const COLECCIONES_ESTUDIOS = [
+  {
+    id: 'senon',
+    label: '16 Estudios',
+    autor: 'Senon',
+    items: Array.from({length:16},(_,i)=>`Estudio nº ${i+1}`)
+  },
+  {
+    id: 'mintzer',
+    label: '14 Jazz & Funk Etudes',
+    autor: 'Bob Mintzer',
+    items: ['Big Dipper Blues','Jump and Jive','Funky Tune','Free Style','Hip Blues','Two-Beat','Country Funk','Medium Funk','Latin Funk','Slow Funk','3/4 Blues','Cut Time Blues','Fast Funk','Super Funk']
+  },
+  {
+    id: 'lacour',
+    label: '28 Estudios sobre los modos de Messiaen',
+    autor: 'G. Lacour',
+    items: Array.from({length:28},(_,i)=>`Estudio nº ${i+1}`)
+  },
 ];
 
 const FEELS = ['muy natural','fluido','inseguro','tenso','bloqueado','en progreso','dominado'];
@@ -522,12 +540,15 @@ window.logout = async () => {
 // ── ALUMNO APP ───────────────────────────────────────────────
 function showAlumnoApp(){
   const d = alumnoDoc;
-  document.getElementById('alu-name').textContent = d.nombre || 'Alumno';
-  document.getElementById('alu-avatar').textContent = (d.nombre||'A')[0].toUpperCase();
-  document.getElementById('alu-trimestre').textContent = (d.trimestre||1)+'.º Trimestre';
+  const inicial = (d.nombre||'A')[0].toUpperCase();
+  const hdrAvatar = document.getElementById('hdr-avatar');
+  hdrAvatar.textContent = inicial;
+  hdrAvatar.style.display = 'flex';
   document.getElementById('hdr-alumno-name').textContent = d.nombre || '';
+  document.getElementById('alu-trimestre') && (document.getElementById('alu-trimestre').textContent = (d.trimestre||1)+'.º Trimestre');
   showScreen('s-app');
   renderSecciones();
+  renderEstudios();
   renderTonalidades();
   renderExtendidas();
   renderProgreso();
@@ -612,6 +633,65 @@ window.saveTonalidades = async () => {
   } catch(e){ toast('Error al guardar'); console.error(e); }
 };
 
+// ── ESTUDIOS (colecciones predefinidas) ──────────────────────
+function renderEstudios(){
+  const container = document.getElementById('estudios-list');
+  if(!container) return;
+  container.innerHTML = '';
+  const pin = currentAlumno.pin;
+
+  COLECCIONES_ESTUDIOS.forEach(col => {
+    const card = document.createElement('div');
+    card.className = 's-card open';
+    card.style.marginBottom = '12px';
+
+    const colDone = col.items.filter((_,i) => localStorage.getItem(`est_${pin}_${col.id}_${i}`) === 'dominado').length;
+    const colWorked = col.items.filter((_,i) => !!localStorage.getItem(`est_${pin}_${col.id}_${i}`)).length;
+
+    card.innerHTML = `
+      <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
+        <div class="s-card-icon" style="background:#2d4a3a;font-size:16px">📖</div>
+        <div>
+          <div class="s-card-title">${col.label}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${col.autor}</div>
+        </div>
+        <span class="s-card-count">${colWorked}/${col.items.length}</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="s-card-body" style="padding:10px 14px">
+        ${col.items.map((titulo, idx) => {
+          const estado = localStorage.getItem(`est_${pin}_${col.id}_${idx}`) || '';
+          return `<div class="item-row" style="margin-bottom:6px;padding:9px 12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <div class="item-title" style="margin:0;font-size:13px">${titulo}</div>
+              <div class="item-actions" style="flex-shrink:0;flex-wrap:nowrap">
+                ${ESTADOS.map(e=>`<button class="status-btn ${estado===e?e:''}"
+                  onclick="setEstudioEstado('${col.id}',${idx},this,'${e}')"
+                  style="font-size:10px;padding:3px 8px">${ESTADO_LABELS[e]}</button>`).join('')}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+window.setEstudioEstado = (colId, idx, btn, estado) => {
+  const pin = currentAlumno.pin;
+  const key = `est_${pin}_${colId}_${idx}`;
+  const cur = localStorage.getItem(key);
+  const next = cur === estado ? '' : estado;
+  localStorage.setItem(key, next);
+  const row = btn.closest('.item-row');
+  row.querySelectorAll('.status-btn').forEach((b,i) => {
+    b.className = 'status-btn ' + (next === ESTADOS[i] ? ESTADOS[i] : '');
+    b.style.fontSize = '10px'; b.style.padding = '3px 8px';
+  });
+  // actualizar contador de la colección
+  renderEstudios();
+};
+
 // ── SECCIONES (técnica, estudios, obras, transcripciones) ────
 function renderSecciones(){
   SECCIONES.forEach(sec => {
@@ -679,11 +759,11 @@ function renderExtendidas(){
     const stars = s.stars||0;
     const starStr = stars>0?'★'.repeat(stars)+'☆'.repeat(5-stars):'☆☆☆☆☆';
     const card = document.createElement('div');
-    card.className='tec-card'; card.id='tec-'+t.id;
+    card.className='tec-card open'; card.id='tec-'+t.id;
     card.innerHTML=`
       <div class="tec-top" onclick="toggleTec('${t.id}')">
         <div class="tec-icon" style="background:${t.color}40;color:${t.color}">${t.icon}</div>
-        <div><div class="tec-name">${t.name}</div><div class="tec-desc">${t.desc}</div></div>
+        <div><div class="tec-name">${t.name}</div></div>
         <div class="tec-stars">${starStr}</div>
       </div>
       <div class="tec-body">
@@ -705,7 +785,6 @@ function renderExtendidas(){
 }
 
 window.toggleTec = (id) => {
-  document.querySelectorAll('.tec-card').forEach(c=>{ if(c.id!=='tec-'+id) c.classList.remove('open'); });
   document.getElementById('tec-'+id).classList.toggle('open');
 };
 window.setStar = (id,n) => {
