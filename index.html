@@ -762,16 +762,23 @@ function renderObras(){
     card.style.marginBottom = '12px';
 
     const videosHtml = videos.length ? `
-      <div class="yt-section">
-        <div class="yt-section-lbl">Vídeos de referencia</div>
-        ${videos.map((v,i)=>`
-          <div>
-            ${v.label?`<div class="yt-label">${v.label}</div>`:''}
-            <div class="yt-embed-wrap">
-              <iframe src="https://www.youtube-nocookie.com/embed/${v.id}" allowfullscreen loading="lazy"></iframe>
-            </div>
-            ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px;margin-bottom:10px" onclick="removeObraVideo('${obra.id}',${i})">🗑 Eliminar vídeo</button>`:''}
-          </div>`).join('')}
+      <div class="s-card" style="margin-top:10px;margin-bottom:0">
+        <div class="s-card-hdr" style="padding:10px 14px" onclick="this.closest('.s-card').classList.toggle('open')">
+          <div class="s-card-icon" style="background:#1a2a3a;font-size:13px;width:28px;height:28px">▶</div>
+          <div class="s-card-title" style="font-size:15px">Versiones de referencia</div>
+          <span class="s-card-count">${videos.length} vídeo${videos.length>1?'s':''}</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="s-card-body">
+          ${videos.map((v,i)=>`
+            <div style="margin-bottom:12px">
+              ${v.label?`<div class="yt-label">${v.label}</div>`:''}
+              <div class="yt-embed-wrap">
+                <iframe src="https://www.youtube-nocookie.com/embed/${v.id}" allowfullscreen loading="lazy"></iframe>
+              </div>
+              ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px" onclick="removeObraVideo('${obra.id}',${i})">🗑 Eliminar</button>`:''}
+            </div>`).join('')}
+        </div>
       </div>` : '';
 
     const addVideoHtml = isProf ? `
