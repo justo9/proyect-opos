@@ -314,10 +314,10 @@
     <div id="form-alu">
       <div class="f-label" style="text-align:center;margin-bottom:10px">Introduce tu PIN</div>
       <div class="pin-row">
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" id="p0"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" id="p1"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" id="p2"/>
-        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" id="p3"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p0"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p1"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p2"/>
+        <input class="pin-d" maxlength="1" type="password" inputmode="numeric" autocomplete="off" id="p3"/>
       </div>
       <button class="btn-primary" onclick="loginAlumno()">Entrar</button>
     </div>
@@ -1149,7 +1149,7 @@ function renderSecciones(){
     if(!container) return;
     container.innerHTML = '';
     const items = (alumnoDoc[sec.id] || []);
-    if(!items.length){ container.innerHTML='<div class="empty">El profesor aún no ha añadido contenido.</div>'; return; }
+    if(!items.length){ return; }
     items.forEach((item,idx) => {
       const estado = item.alumnoEstado || '';
       const nota   = item.alumnoNota  || '';
@@ -1663,6 +1663,11 @@ window.toast = toast;
 // cargar eventos al inicio para el alumno (después de login)
 const origShowAlumno = window.loginAlumno;
 window._loadEventosYMostrar = async () => { await loadEventos(); renderCalendario(); };
+
+// Limpiar PIN al cargar (evitar autocompletado del navegador)
+document.addEventListener('DOMContentLoaded', () => {
+  [0,1,2,3].forEach(i => { const el = document.getElementById('p'+i); if(el) el.value = ''; });
+});
 
 // service worker
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
