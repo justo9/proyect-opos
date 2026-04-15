@@ -623,7 +623,7 @@ function showAlumnoApp(){
   renderTonalidades();
   renderExtendidas();
   renderProgreso();
-  renderCalendario();
+  loadEventos().then(()=>renderCalendario());
 }
 
 window.showTab = (id) => {
@@ -1267,6 +1267,42 @@ function showAlumnoDetail(pin){
           </div>`).join('')}
       </div>`).join('')}
 
+    <div class="prof-section-hdr">Obras</div>
+    ${OBRAS_CURSO.map(obra=>`
+      <div class="item-row" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div>
+            <div class="item-title" style="margin:0">${obra.titulo}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}${obra.opus?' · '+obra.opus:''}</div>
+          </div>
+          <button class="btn-comment" onclick="openPdf('${obra.pdf}','${obra.titulo} — ${obra.compositor}')">📄 Ver / Anotar</button>
+        </div>
+      </div>`).join('')}
+    <div class="add-form" style="margin-top:8px">
+      <div class="add-form-title">Añadir obra</div>
+      <div class="add-row">
+        <input class="f-input-sm" id="new-tit-obras" placeholder="Título"/>
+        <input class="f-input-sm" id="new-det-obras" placeholder="Detalle (opcional)"/>
+        <button class="btn-add" onclick="addItem('${pin}','obras')">Añadir</button>
+      </div>
+    </div>
+    <div id="prof-obras-list">
+      ${(a.obras||[]).map((item,idx)=>`
+        <div class="item-row">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+            <input class="f-input-sm" id="tit-obras-${idx}" value="${item.titulo}" style="flex:1;min-width:120px"/>
+            <button class="btn-add" style="padding:5px 10px;font-size:11px" onclick="renameObra('${pin}',${idx})">Renombrar</button>
+            <button class="btn-del" onclick="delItem('${pin}','obras',${idx})">Eliminar</button>
+          </div>
+          ${item.detalle?`<div class="item-detail">${item.detalle}</div>`:''}
+          ${item.alumnoEstado?`<div style="font-size:11px;color:var(--gold);margin-bottom:4px">Estado: ${ESTADO_LABELS[item.alumnoEstado]||item.alumnoEstado}</div>`:''}
+          ${item.alumnoNota?`<div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-style:italic">"${item.alumnoNota}"</div>`:''}
+          <div class="f-label" style="margin-bottom:4px">Comentario del profesor</div>
+          <textarea class="comment-area" id="com-obras-${idx}" placeholder="Escribe un comentario…">${item.comentarioProf||''}</textarea>
+          <button class="btn-comment" onclick="saveComentario('${pin}','obras',${idx})">Guardar comentario</button>
+        </div>`).join('')}
+    </div>
+
     <div class="prof-section-hdr">Técnicas extendidas</div>
     ${TECNICAS.map(t=>{
       const s=(a.tecnicas||{})[t.id]||{};
@@ -1322,6 +1358,18 @@ window.delItem = async (pin, sec, idx) => {
     await updateDoc(doc(db,'alumnos',pin),{ [sec]: a[sec] });
     toast('Eliminado');
     showAlumnoDetail(pin);
+  } catch(e){ toast('Error'); console.error(e); }
+};
+
+window.renameObra = async (pin, idx) => {
+  const nuevo = document.getElementById(`tit-obras-${idx}`).value.trim();
+  if(!nuevo) return;
+  const a = allAlumnos.find(x=>x.pin===pin);
+  if(!a?.obras?.[idx]) return;
+  a.obras[idx].titulo = nuevo;
+  try {
+    await updateDoc(doc(db,'alumnos',pin),{ [`obras.${idx}.titulo`]: nuevo });
+    toast('Obra renombrada');
   } catch(e){ toast('Error'); console.error(e); }
 };
 
