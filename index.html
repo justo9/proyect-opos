@@ -231,6 +231,33 @@
     input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--bg4);border-radius:2px;outline:none}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--gold);border-radius:50%;cursor:pointer}
 
+    /* ── PDF VIEWER ── */
+    #pdf-modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.96);flex-direction:column}
+    #pdf-modal.open{display:flex}
+    .pdf-toolbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:8px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0}
+    .pdf-tool-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:12px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+    .pdf-tool-btn.active{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+    .pdf-tool-btn:hover:not(.active){border-color:var(--border2)}
+    .pdf-sep{width:1px;height:22px;background:var(--border);margin:0 2px;flex-shrink:0}
+    .pdf-page-wrap{flex:1;overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:16px;background:#111}
+    .pdf-cv-wrap{position:relative;display:inline-block;box-shadow:0 4px 40px rgba(0,0,0,.8)}
+    #pdf-cv{display:block}
+    #draw-cv{position:absolute;top:0;left:0}
+    .pdf-cmt{position:absolute;z-index:15}
+    .pdf-cmt-ico{width:26px;height:26px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.5);transition:transform .15s;user-select:none}
+    .pdf-cmt-ico:hover{transform:scale(1.15)}
+    .pdf-cmt-pop{display:none;position:absolute;left:30px;top:-4px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;min-width:180px;max-width:220px;font-size:12px;color:var(--text);line-height:1.5;box-shadow:0 4px 16px rgba(0,0,0,.5);z-index:20;white-space:normal}
+    .pdf-cmt-pop.show{display:block}
+    #cmt-inp-wrap{display:none;position:absolute;z-index:30;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:10px;width:220px;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+    #cmt-inp-txt{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:inherit;font-size:12px;padding:7px 9px;resize:none;min-height:60px;outline:none;line-height:1.5}
+    #cmt-inp-txt:focus{border-color:var(--border2)}
+
+    /* ── ESTRELLAS DE DIFICULTAD (estudios) ── */
+    .est-diff-row{display:flex;gap:3px;align-items:center;margin-top:6px}
+    .est-diff-lbl{font-size:10px;color:var(--text3);letter-spacing:.5px;margin-right:4px}
+    .est-star{background:none;border:none;font-size:16px;cursor:pointer;color:var(--text3);padding:0 1px;line-height:1;transition:color .15s}
+    .est-star.on{color:var(--gold)}
+
     /* ── TONALIDADES ── */
     .ton-section{margin-bottom:16px}
     .ton-section-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:4px}
@@ -325,9 +352,7 @@
         <span class="chevron">▾</span>
       </div>
       <div class="s-card-body">
-        <div class="ton-group-label">Con sostenidos ♯</div>
-        <div class="ton-grid" id="ton-grid-sharp"></div>
-        <div class="ton-group-label" style="margin-top:12px">Con bemoles ♭</div>
+        <div class="ton-grid" id="ton-grid-sharp" style="margin-bottom:6px"></div>
         <div class="ton-grid" id="ton-grid-flat"></div>
         <div class="ton-legend">
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg4);border:1px solid var(--border)"></div>Sin trabajar</div>
@@ -417,6 +442,48 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ══ PDF VIEWER MODAL ══ -->
+<div id="pdf-modal">
+  <div class="pdf-toolbar">
+    <button class="pdf-tool-btn" onclick="closePdf()">✕</button>
+    <div class="pdf-sep"></div>
+    <button class="pdf-tool-btn" onclick="pdfPrev()">◀</button>
+    <span id="pdf-pi" style="font-size:12px;color:var(--text2);min-width:55px;text-align:center">— / —</span>
+    <button class="pdf-tool-btn" onclick="pdfNext()">▶</button>
+    <div class="pdf-sep"></div>
+    <button class="pdf-tool-btn" onclick="pdfZoomOut()">−</button>
+    <button class="pdf-tool-btn" onclick="pdfZoomIn()">+</button>
+    <div class="pdf-sep"></div>
+    <button class="pdf-tool-btn active" id="tool-pen" onclick="setDMode('pen')">✏️ Lápiz</button>
+    <button class="pdf-tool-btn" id="tool-eraser" onclick="setDMode('eraser')">⬜ Borrador</button>
+    <button class="pdf-tool-btn" id="tool-cmt" style="display:none" onclick="setDMode('cmt')">💬 Comentario</button>
+    <input type="color" id="draw-color" value="#f4c842" title="Color del lápiz"
+      style="width:30px;height:30px;border:1px solid var(--border);border-radius:6px;background:none;cursor:pointer;padding:2px"/>
+    <button class="pdf-tool-btn" onclick="pdfUndo()">↩ Deshacer</button>
+    <button class="pdf-tool-btn" onclick="pdfClear()">🗑 Limpiar página</button>
+    <div class="pdf-sep"></div>
+    <a id="pdf-dl" class="pdf-tool-btn" download style="text-decoration:none">⬇ Descargar</a>
+    <span id="pdf-ttl" style="font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold);margin-left:auto;padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px"></span>
+  </div>
+  <div class="pdf-page-wrap">
+    <div class="pdf-cv-wrap" id="pdf-cv-wrap">
+      <canvas id="pdf-cv"></canvas>
+      <canvas id="draw-cv" style="cursor:crosshair"></canvas>
+      <!-- input de comentario inline -->
+      <div id="cmt-inp-wrap">
+        <textarea id="cmt-inp-txt" class="tec-notes" placeholder="Escribe el comentario del profesor…"></textarea>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <button class="save-item-btn" style="flex:1" onclick="confirmCmt()">Añadir</button>
+          <button class="pdf-tool-btn" style="flex:1;justify-content:center" onclick="cancelCmt()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
 <!-- ══ FIREBASE ══ -->
 <script type="module">
 import { initializeApp }                           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -442,8 +509,11 @@ const db   = getFirestore(app);
 // ── DATOS ESTÁTICOS ──────────────────────────────────────────
 const SECCIONES = [
   { id:'tecnica',         label:'Técnica',         icon:'🎼', color:'#2d4a6b' },
-  { id:'obras',           label:'Obras',            icon:'🎷', color:'#4a3060' },
   { id:'transcripciones', label:'Transcripciones',  icon:'✍️', color:'#5a3a20' },
+];
+
+const OBRAS_CURSO = [
+  { id:'creston', titulo:'Sonata para Saxofón Alto', compositor:'Paul Creston', opus:'Op. 19', pdf:'CRESTON-SONATA-Alto-Sax-Complete.pdf' },
 ];
 
 const TECNICAS = [
@@ -549,6 +619,7 @@ function showAlumnoApp(){
   showScreen('s-app');
   renderSecciones();
   renderEstudios();
+  renderObras();
   renderTonalidades();
   renderExtendidas();
   renderProgreso();
@@ -633,6 +704,214 @@ window.saveTonalidades = async () => {
   } catch(e){ toast('Error al guardar'); console.error(e); }
 };
 
+// ── OBRAS ────────────────────────────────────────────────────
+function renderObras(){
+  const container = document.getElementById('obras-list');
+  if(!container) return;
+  container.innerHTML = '';
+  // Obras del curso (hardcoded con PDF)
+  OBRAS_CURSO.forEach(obra => {
+    const card = document.createElement('div');
+    card.className = 's-card open';
+    card.style.marginBottom = '12px';
+    card.innerHTML = `
+      <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
+        <div class="s-card-icon" style="background:#3a2060;font-size:16px">🎷</div>
+        <div>
+          <div class="s-card-title">${obra.titulo}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}${obra.opus?' · '+obra.opus:''}</div>
+        </div>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="s-card-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-primary" style="flex:1;min-width:130px"
+            onclick="openPdf('${obra.pdf}','${obra.titulo} — ${obra.compositor}')">
+            📄 Ver partitura
+          </button>
+          <a href="${obra.pdf}" download="${obra.titulo}.pdf"
+            class="btn-primary" style="flex:1;min-width:130px;text-align:center;text-decoration:none;display:flex;align-items:center;justify-content:center">
+            ⬇ Descargar
+          </a>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+  // Obras añadidas por el profesor en Firestore
+  const items = alumnoDoc.obras || [];
+  items.forEach((item, idx) => {
+    const estado = item.alumnoEstado || '';
+    const div = document.createElement('div');
+    div.className = 'item-row';
+    div.innerHTML = `
+      <div class="item-title">${item.titulo}</div>
+      ${item.detalle?`<div class="item-detail">${item.detalle}</div>`:''}
+      ${item.comentarioProf?`<div class="prof-comment"><div class="prof-comment-label">Comentario del profesor</div>${item.comentarioProf}</div>`:''}
+      <div class="item-actions">
+        ${ESTADOS.map(e=>`<button class="status-btn ${estado===e?e:''}" onclick="setEstado('obras',${idx},'${e}',this)">${ESTADO_LABELS[e]}</button>`).join('')}
+      </div>
+      <button class="save-item-btn" onclick="saveSeccion('obras',${idx})">Guardar</button>`;
+    container.appendChild(div);
+  });
+}
+
+// ── PDF VIEWER ───────────────────────────────────────────────
+let _pdf=null, _pdfPg=1, _pdfZoom=1.3, _pdfSrc='';
+let _strokes={}, _curStr=null, _dColor='#f4c842', _dWidth=3, _dMode='pen', _drawing=false;
+let _cmts={}, _cmtPos=null;
+
+window.openPdf = (src, title) => {
+  _pdfSrc=src; _pdfPg=1;
+  _strokes=JSON.parse(localStorage.getItem('dr:'+src)||'{}');
+  _cmts=JSON.parse(localStorage.getItem('cm:'+src)||'{}');
+  const modal=document.getElementById('pdf-modal');
+  modal.classList.add('open');
+  document.getElementById('pdf-ttl').textContent=title;
+  document.getElementById('pdf-dl').href=src;
+  document.getElementById('pdf-dl').setAttribute('download', title+'.pdf');
+  document.getElementById('tool-cmt').style.display=isProf?'inline-flex':'none';
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.getDocument(src).promise.then(d=>{_pdf=d;_rPdfPage();}).catch(e=>{toast('Error al cargar PDF');console.error(e);});
+};
+window.closePdf=()=>{ document.getElementById('pdf-modal').classList.remove('open'); _pdf=null; };
+window.pdfPrev=()=>{ if(_pdfPg>1){_pdfPg--;_rPdfPage();} };
+window.pdfNext=()=>{ if(_pdf&&_pdfPg<_pdf.numPages){_pdfPg++;_rPdfPage();} };
+window.pdfZoomIn=()=>{ _pdfZoom=Math.min(3,_pdfZoom+.25);_rPdfPage(); };
+window.pdfZoomOut=()=>{ _pdfZoom=Math.max(.4,_pdfZoom-.25);_rPdfPage(); };
+window.setDMode=(m)=>{
+  _dMode=m;
+  ['pen','eraser','cmt'].forEach(id=>{ const b=document.getElementById('tool-'+id); if(b)b.classList.toggle('active',id===m); });
+  const dc=document.getElementById('draw-cv');
+  if(dc) dc.style.cursor=m==='pen'?'crosshair':m==='eraser'?'cell':'copy';
+};
+window.pdfUndo=()=>{
+  const pg=''+_pdfPg;
+  if(_strokes[pg]?.length){_strokes[pg].pop();_saveStr();_rStrokes();}
+};
+window.pdfClear=()=>{
+  _strokes[''+_pdfPg]=[]; _cmts[''+_pdfPg]=[];
+  _saveStr(); _saveCmts(); _rStrokes(); _rCmts();
+};
+function _saveStr(){ localStorage.setItem('dr:'+_pdfSrc,JSON.stringify(_strokes)); }
+function _saveCmts(){ localStorage.setItem('cm:'+_pdfSrc,JSON.stringify(_cmts)); }
+
+function _rPdfPage(){
+  if(!_pdf) return;
+  _pdf.getPage(_pdfPg).then(page=>{
+    const vp=page.getViewport({scale:_pdfZoom});
+    const pc=document.getElementById('pdf-cv');
+    const dc=document.getElementById('draw-cv');
+    pc.width=dc.width=vp.width;
+    pc.height=dc.height=vp.height;
+    page.render({canvasContext:pc.getContext('2d'),viewport:vp}).promise.then(()=>{_rStrokes();_rCmts();});
+    document.getElementById('pdf-pi').textContent=`${_pdfPg} / ${_pdf.numPages}`;
+  });
+}
+function _rStrokes(){
+  const dc=document.getElementById('draw-cv'); if(!dc) return;
+  const ctx=dc.getContext('2d');
+  ctx.clearRect(0,0,dc.width,dc.height);
+  (_strokes[''+_pdfPg]||[]).forEach(s=>{
+    if(!s.pts||s.pts.length<2) return;
+    ctx.save();
+    ctx.globalCompositeOperation=s.er?'destination-out':'source-over';
+    ctx.strokeStyle=s.er?'rgba(0,0,0,1)':s.col;
+    ctx.lineWidth=s.w; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(s.pts[0].x,s.pts[0].y);
+    s.pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.stroke(); ctx.restore();
+  });
+}
+function _rCmts(){
+  const wrap=document.getElementById('pdf-cv-wrap'); if(!wrap) return;
+  wrap.querySelectorAll('.pdf-cmt').forEach(e=>e.remove());
+  const dc=document.getElementById('draw-cv');
+  (_cmts[''+_pdfPg]||[]).forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='pdf-cmt';
+    el.style.cssText=`position:absolute;left:${c.xp*dc.width-13}px;top:${c.yp*dc.height-13}px`;
+    el.innerHTML=`<div class="pdf-cmt-ico" onclick="this.nextElementSibling.classList.toggle('show')">💬</div>
+      <div class="pdf-cmt-pop">
+        <div style="font-size:10px;color:var(--gold);margin-bottom:4px;letter-spacing:.5px;font-style:normal">PROFESOR</div>
+        <div style="font-style:italic">${c.txt}</div>
+        ${isProf?`<button class="pdf-tool-btn" style="padding:2px 8px;font-size:10px;margin-top:6px" onclick="delCmt(${i})">Eliminar</button>`:''}
+      </div>`;
+    wrap.appendChild(el);
+  });
+}
+// Comentario inline
+window.showCmtInput=(xp,yp)=>{
+  _cmtPos={xp,yp};
+  const dc=document.getElementById('draw-cv');
+  const r=dc.getBoundingClientRect();
+  const wrap=document.getElementById('pdf-cv-wrap');
+  const wr=wrap.getBoundingClientRect();
+  const inp=document.getElementById('cmt-inp-wrap');
+  inp.style.left=(xp*r.width+r.left-wr.left+10)+'px';
+  inp.style.top=(yp*r.height+r.top-wr.top-10)+'px';
+  inp.style.display='block';
+  document.getElementById('cmt-inp-txt').value='';
+  document.getElementById('cmt-inp-txt').focus();
+};
+window.confirmCmt=()=>{
+  const txt=document.getElementById('cmt-inp-txt').value.trim();
+  if(!txt||!_cmtPos) return;
+  const pg=''+_pdfPg;
+  if(!_cmts[pg]) _cmts[pg]=[];
+  _cmts[pg].push({xp:_cmtPos.xp,yp:_cmtPos.yp,txt});
+  _saveCmts(); _rCmts(); window.cancelCmt();
+};
+window.cancelCmt=()=>{ document.getElementById('cmt-inp-wrap').style.display='none'; _cmtPos=null; };
+window.delCmt=(i)=>{
+  const pg=''+_pdfPg;
+  if(_cmts[pg]){_cmts[pg].splice(i,1);_saveCmts();_rCmts();}
+};
+// Inicializar canvas de dibujo
+function _initDraw(){
+  const dc=document.getElementById('draw-cv'); if(!dc) return;
+  const gp=(e)=>{
+    const r=dc.getBoundingClientRect();
+    const s=e.touches?e.touches[0]:e;
+    return {x:(s.clientX-r.left)*dc.width/r.width, y:(s.clientY-r.top)*dc.height/r.height,
+            xp:(s.clientX-r.left)/r.width, yp:(s.clientY-r.top)/r.height};
+  };
+  const startD=(e)=>{
+    if(_dMode==='cmt'){const p=gp(e);window.showCmtInput(p.xp,p.yp);return;}
+    e.preventDefault(); _drawing=true; const p=gp(e);
+    _curStr={col:_dColor,w:_dMode==='eraser'?28:_dWidth,er:_dMode==='eraser',pts:[p]};
+  };
+  const moveD=(e)=>{
+    if(!_drawing||!_curStr) return; e.preventDefault();
+    const p=gp(e); _curStr.pts.push(p);
+    const ctx=dc.getContext('2d'); const pts=_curStr.pts;
+    if(pts.length<2) return;
+    ctx.save();
+    ctx.globalCompositeOperation=_curStr.er?'destination-out':'source-over';
+    ctx.strokeStyle=_curStr.er?'rgba(0,0,0,1)':_curStr.col;
+    ctx.lineWidth=_curStr.w; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath(); ctx.moveTo(pts[pts.length-2].x,pts[pts.length-2].y); ctx.lineTo(p.x,p.y);
+    ctx.stroke(); ctx.restore();
+  };
+  const endD=()=>{ if(!_drawing) return; _drawing=false;
+    if(_curStr?.pts.length>0){
+      const pg=''+_pdfPg; if(!_strokes[pg])_strokes[pg]=[];
+      _strokes[pg].push(_curStr); _saveStr();
+    } _curStr=null;
+  };
+  dc.addEventListener('mousedown',startD);
+  dc.addEventListener('mousemove',moveD);
+  dc.addEventListener('mouseup',endD);
+  dc.addEventListener('mouseleave',endD);
+  dc.addEventListener('touchstart',startD,{passive:false});
+  dc.addEventListener('touchmove',moveD,{passive:false});
+  dc.addEventListener('touchend',endD);
+}
+document.addEventListener('DOMContentLoaded',_initDraw);
+document.addEventListener('DOMContentLoaded',()=>{
+  const ci=document.getElementById('draw-color');
+  if(ci) ci.addEventListener('change',e=>{ _dColor=e.target.value; });
+});
+
 // ── ESTUDIOS (colecciones predefinidas) ──────────────────────
 function renderEstudios(){
   const container = document.getElementById('estudios-list');
@@ -642,11 +921,31 @@ function renderEstudios(){
 
   COLECCIONES_ESTUDIOS.forEach(col => {
     const card = document.createElement('div');
-    card.className = 's-card open';
+    card.className = 's-card';
     card.style.marginBottom = '12px';
 
-    const colDone = col.items.filter((_,i) => localStorage.getItem(`est_${pin}_${col.id}_${i}`) === 'dominado').length;
     const colWorked = col.items.filter((_,i) => !!localStorage.getItem(`est_${pin}_${col.id}_${i}`)).length;
+
+    const bodyRows = col.items.map((titulo, idx) => {
+      const estado = localStorage.getItem(`est_${pin}_${col.id}_${idx}`) || '';
+      const diff   = parseInt(localStorage.getItem(`est_diff_${pin}_${col.id}_${idx}`)||'0');
+      const stars  = [1,2,3,4,5].map(n =>
+        `<button class="est-star${diff>=n?' on':''}" onclick="setEstDiff('${col.id}',${idx},${n},this.closest('.est-diff-row'))">★</button>`
+      ).join('');
+      return `<div class="item-row" style="margin-bottom:6px;padding:9px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div class="item-title" style="margin:0;font-size:13px;flex:1">${titulo}</div>
+          <div class="item-actions" style="flex-shrink:0;flex-wrap:nowrap">
+            ${ESTADOS.map(e=>`<button class="status-btn ${estado===e?e:''}"
+              onclick="setEstudioEstado('${col.id}',${idx},this,'${e}')"
+              style="font-size:10px;padding:3px 8px">${ESTADO_LABELS[e]}</button>`).join('')}
+          </div>
+        </div>
+        <div class="est-diff-row">
+          <span class="est-diff-lbl">DIFICULTAD</span>${stars}
+        </div>
+      </div>`;
+    }).join('');
 
     card.innerHTML = `
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
@@ -658,21 +957,7 @@ function renderEstudios(){
         <span class="s-card-count">${colWorked}/${col.items.length}</span>
         <span class="chevron">▾</span>
       </div>
-      <div class="s-card-body" style="padding:10px 14px">
-        ${col.items.map((titulo, idx) => {
-          const estado = localStorage.getItem(`est_${pin}_${col.id}_${idx}`) || '';
-          return `<div class="item-row" style="margin-bottom:6px;padding:9px 12px">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-              <div class="item-title" style="margin:0;font-size:13px">${titulo}</div>
-              <div class="item-actions" style="flex-shrink:0;flex-wrap:nowrap">
-                ${ESTADOS.map(e=>`<button class="status-btn ${estado===e?e:''}"
-                  onclick="setEstudioEstado('${col.id}',${idx},this,'${e}')"
-                  style="font-size:10px;padding:3px 8px">${ESTADO_LABELS[e]}</button>`).join('')}
-              </div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`;
+      <div class="s-card-body" style="padding:10px 14px">${bodyRows}</div>`;
     container.appendChild(card);
   });
 }
@@ -683,13 +968,32 @@ window.setEstudioEstado = (colId, idx, btn, estado) => {
   const cur = localStorage.getItem(key);
   const next = cur === estado ? '' : estado;
   localStorage.setItem(key, next);
-  const row = btn.closest('.item-row');
-  row.querySelectorAll('.status-btn').forEach((b,i) => {
+  btn.closest('.item-row').querySelectorAll('.status-btn').forEach((b,i) => {
     b.className = 'status-btn ' + (next === ESTADOS[i] ? ESTADOS[i] : '');
     b.style.fontSize = '10px'; b.style.padding = '3px 8px';
   });
-  // actualizar contador de la colección
-  renderEstudios();
+  // update count badge
+  const card = btn.closest('.s-card');
+  const colObj = COLECCIONES_ESTUDIOS.find(c => {
+    const pin2 = currentAlumno.pin;
+    return card.querySelector('.s-card-title')?.textContent === c.label;
+  });
+  if(card){
+    const countEl = card.querySelector('.s-card-count');
+    if(countEl && colObj){
+      const worked = colObj.items.filter((_,i2)=>!!localStorage.getItem(`est_${pin}_${colObj.id}_${i2}`)).length;
+      countEl.textContent = `${worked}/${colObj.items.length}`;
+    }
+  }
+};
+
+window.setEstDiff = (colId, idx, val, row) => {
+  const pin = currentAlumno.pin;
+  const key = `est_diff_${pin}_${colId}_${idx}`;
+  const cur = parseInt(localStorage.getItem(key)||'0');
+  const next = cur === val ? 0 : val;
+  localStorage.setItem(key, next);
+  row.querySelectorAll('.est-star').forEach((s,i) => s.classList.toggle('on', i < next));
 };
 
 // ── SECCIONES (técnica, estudios, obras, transcripciones) ────
