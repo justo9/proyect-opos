@@ -724,6 +724,39 @@ function ytId(url){
 }
 function getObraVideos(obraId){ return JSON.parse(localStorage.getItem('yt_'+obraId)||'[]'); }
 function saveObraVideos(obraId, arr){ localStorage.setItem('yt_'+obraId, JSON.stringify(arr)); }
+function getObraEjercicios(obraId){ return JSON.parse(localStorage.getItem('ej_'+obraId)||'[]'); }
+function saveObraEjercicios(obraId, arr){ localStorage.setItem('ej_'+obraId, JSON.stringify(arr)); }
+
+window.addObraEjercicio = (obraId) => {
+  const inp = document.getElementById('ej-inp-'+obraId);
+  const filename = inp.value.trim();
+  if(!filename){ toast('Introduce el nombre del archivo'); return; }
+  const lbl = document.getElementById('ej-lbl-'+obraId).value.trim();
+  const ejs = getObraEjercicios(obraId);
+  ejs.push({ src: filename, label: lbl });
+  saveObraEjercicios(obraId, ejs);
+  inp.value = ''; document.getElementById('ej-lbl-'+obraId).value = '';
+  renderObras();
+  toast('Ejercicio añadido');
+};
+
+window.removeObraEjercicio = (obraId, idx) => {
+  const ejs = getObraEjercicios(obraId);
+  ejs.splice(idx, 1);
+  saveObraEjercicios(obraId, ejs);
+  renderObras();
+};
+
+window.profAddEjercicio = (obraId) => {
+  const filename = document.getElementById('prof-ej-inp-'+obraId).value.trim();
+  if(!filename){ toast('Introduce el nombre del archivo'); return; }
+  const lbl = document.getElementById('prof-ej-lbl-'+obraId).value.trim();
+  const ejs = getObraEjercicios(obraId);
+  ejs.push({ src: filename, label: lbl });
+  saveObraEjercicios(obraId, ejs);
+  showAlumnoDetail(viewingAlumno.pin);
+  toast('Ejercicio añadido');
+};
 
 window.addObraVideo = (obraId) => {
   const inp = document.getElementById('yt-inp-'+obraId);
@@ -791,6 +824,37 @@ function renderObras(){
         </div>
       </div>` : '';
 
+    const ejs = getObraEjercicios(obra.id);
+    const ejerciciosHtml = ejs.length ? `
+      <div class="s-card" style="margin-top:10px;margin-bottom:0">
+        <div class="s-card-hdr" style="padding:10px 14px" onclick="this.closest('.s-card').classList.toggle('open')">
+          <div class="s-card-icon" style="background:#1a3020;font-size:14px;width:28px;height:28px">✎</div>
+          <div class="s-card-title" style="font-size:15px">Ejercicios</div>
+          <span class="s-card-count">${ejs.length} imagen${ejs.length>1?'es':''}</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="s-card-body">
+          ${ejs.map((e,i)=>`
+            <div style="margin-bottom:14px">
+              ${e.label?`<div class="yt-label">${e.label}</div>`:''}
+              <img src="${e.src}" alt="${e.label||'Ejercicio '+(i+1)}"
+                style="width:100%;border-radius:var(--r-sm);border:1px solid var(--border);display:block"/>
+              ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px;margin-top:6px"
+                onclick="removeObraEjercicio('${obra.id}',${i})">🗑 Eliminar</button>`:''}
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    const addEjercicioHtml = isProf ? `
+      <div class="yt-section" style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+        <div class="yt-section-lbl">Añadir ejercicio (imagen JPG)</div>
+        <div class="yt-add-row">
+          <input class="f-input-sm" id="ej-inp-${obra.id}" placeholder="Nombre del archivo (ej: ejercicio1.jpg)" style="flex:2;min-width:160px"/>
+          <input class="f-input-sm" id="ej-lbl-${obra.id}" placeholder="Descripción (opcional)" style="flex:1;min-width:100px"/>
+          <button class="btn-add" onclick="addObraEjercicio('${obra.id}')">Añadir</button>
+        </div>
+      </div>` : '';
+
     card.innerHTML = `
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
         <div class="s-card-icon" style="background:#3a2060;font-family:'Cormorant Garamond',serif;font-size:22px;color:#b090e0">♩</div>
@@ -802,7 +866,7 @@ function renderObras(){
         <span class="chevron">▾</span>
       </div>
       <div class="s-card-body">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${videos.length||isProf?'12px':'0'}">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <button class="btn-primary" style="flex:1;min-width:130px"
             onclick="openPdf('${pdfEncoded}','${obra.titulo} — ${obra.compositor}')">
             📄 Ver partitura
@@ -812,7 +876,10 @@ function renderObras(){
             ⬇ Descargar
           </a>
         </div>
-        ${videosHtml}${addVideoHtml}
+        ${videosHtml}
+        ${ejerciciosHtml}
+        ${addVideoHtml}
+        ${addEjercicioHtml}
       </div>`;
     container.appendChild(card);
   });
@@ -1372,6 +1439,22 @@ function showAlumnoDetail(pin){
           <input class="f-input-sm" id="prof-yt-inp-${obra.id}" placeholder="URL de YouTube" style="flex:2;min-width:140px"/>
           <input class="f-input-sm" id="prof-yt-lbl-${obra.id}" placeholder="Etiqueta (opcional)" style="flex:1;min-width:90px"/>
           <button class="btn-add" onclick="profAddVideo('${obra.id}')">Añadir</button>
+        </div>
+        <div class="yt-section-lbl" style="margin-top:14px">Ejercicios (${getObraEjercicios(obra.id).length} imágenes)</div>
+        ${getObraEjercicios(obra.id).map((e,i)=>`
+          <div class="yt-item">
+            <img class="yt-thumb" src="${e.src}" alt="" onerror="this.style.background='#333'"/>
+            <div class="yt-item-info">
+              <div style="font-size:12px;color:var(--text);margin-bottom:2px">${e.label||'Sin descripción'}</div>
+              <div class="yt-item-url">${e.src}</div>
+            </div>
+            <button class="btn-del" style="flex-shrink:0"
+              onclick="(()=>{const ejs=getObraEjercicios('${obra.id}');ejs.splice(${i},1);saveObraEjercicios('${obra.id}',ejs);showAlumnoDetail(viewingAlumno.pin);})()">✕</button>
+          </div>`).join('')}
+        <div class="yt-add-row" style="margin-top:6px">
+          <input class="f-input-sm" id="prof-ej-inp-${obra.id}" placeholder="Nombre del archivo .jpg" style="flex:2;min-width:140px"/>
+          <input class="f-input-sm" id="prof-ej-lbl-${obra.id}" placeholder="Descripción (opcional)" style="flex:1;min-width:90px"/>
+          <button class="btn-add" onclick="profAddEjercicio('${obra.id}')">Añadir</button>
         </div>
       </div>`;
     }).join('')}
