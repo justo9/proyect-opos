@@ -230,6 +230,30 @@
 
     input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:var(--bg4);border-radius:2px;outline:none}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--gold);border-radius:50%;cursor:pointer}
+
+    /* ── TONALIDADES ── */
+    .ton-section{margin-bottom:16px}
+    .ton-section-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text);margin-bottom:4px}
+    .ton-section-sub{font-size:11px;color:var(--text3);margin-bottom:12px}
+    .ton-group-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;margin-top:14px}
+    .ton-group-label:first-child{margin-top:0}
+    .ton-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:4px}
+    .ton-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 2px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none}
+    .ton-cell:active{opacity:.75}
+    .ton-maj{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--text);line-height:1.1}
+    .ton-min{font-size:10px;color:var(--text3);margin-top:3px}
+    .ton-cell.en-proceso{border-color:var(--amber);background:rgba(212,162,76,.12)}
+    .ton-cell.en-proceso .ton-maj{color:var(--amber)}
+    .ton-cell.en-proceso .ton-min{color:var(--amber);opacity:.7}
+    .ton-cell.trabajado{border-color:#5a8c6a;background:rgba(76,175,130,.1)}
+    .ton-cell.trabajado .ton-maj{color:var(--green)}
+    .ton-cell.trabajado .ton-min{color:var(--green);opacity:.8}
+    .ton-cell.dominado{border-color:var(--gold);background:var(--gold-dim)}
+    .ton-cell.dominado .ton-maj{color:var(--gold)}
+    .ton-cell.dominado .ton-min{color:var(--gold2)}
+    .ton-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .ton-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+    .ton-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
   </style>
 </head>
 <body>
@@ -290,6 +314,30 @@
       <div><div class="alumno-name" id="alu-name">Cargando…</div><div class="alumno-curso">6.º Enseñanzas Profesionales · Saxofón</div></div>
       <div class="trimestre-badge" id="alu-trimestre">1.º Trimestre</div>
     </div>
+
+    <!-- Grid de tonalidades -->
+    <div class="s-card" style="margin-bottom:12px">
+      <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
+        <div class="s-card-icon" style="background:#2d3a50;font-size:18px">♭♯</div>
+        <div class="s-card-title">Tonalidades</div>
+        <span class="s-card-count" id="ton-count">—</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="s-card-body">
+        <div class="ton-group-label">Con sostenidos ♯</div>
+        <div class="ton-grid" id="ton-grid-sharp"></div>
+        <div class="ton-group-label" style="margin-top:12px">Con bemoles ♭</div>
+        <div class="ton-grid" id="ton-grid-flat"></div>
+        <div class="ton-legend">
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg4);border:1px solid var(--border)"></div>Sin trabajar</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(212,162,76,.3);border:1px solid var(--amber)"></div>En proceso</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.2);border:1px solid #5a8c6a"></div>Trabajada</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--gold-dim);border:1px solid var(--gold)"></div>Dominada</div>
+        </div>
+        <button class="save-item-btn" style="margin-top:12px;width:100%" onclick="saveTonalidades()">Guardar tonalidades</button>
+      </div>
+    </div>
+
     <div id="tecnica-list"></div>
   </div>
 
@@ -476,6 +524,7 @@ function showAlumnoApp(){
   document.getElementById('alu-trimestre').textContent = (d.trimestre||1)+'.º Trimestre';
   showScreen('s-app');
   renderSecciones();
+  renderTonalidades();
   renderExtendidas();
   renderProgreso();
   renderCalendario();
@@ -488,6 +537,75 @@ window.showTab = (id) => {
     const ids=['t-tecnica','t-estudios','t-obras','t-transcripciones','t-extendidas','t-progreso','t-calendario'];
     b.classList.toggle('active', ids[i]===id);
   });
+};
+
+// ── TONALIDADES ─────────────────────────────────────────────
+const TON_SHARP = [
+  { id:'DoM',   maj:'Do M',   min:'La m'  },
+  { id:'SolM',  maj:'Sol M',  min:'Mi m'  },
+  { id:'ReM',   maj:'Re M',   min:'Si m'  },
+  { id:'LaM',   maj:'La M',   min:'Fa♯m' },
+  { id:'MiM',   maj:'Mi M',   min:'Do♯m' },
+  { id:'SiM',   maj:'Si M',   min:'Sol♯m'},
+  { id:'FasM',  maj:'Fa♯M',  min:'Re♯m' },
+  { id:'DosM',  maj:'Do♯M',  min:'La♯m' },
+];
+const TON_FLAT = [
+  { id:'DoM',   maj:'Do M',   min:'La m'  },
+  { id:'FaM',   maj:'Fa M',   min:'Re m'  },
+  { id:'SibM',  maj:'Si♭M',  min:'Sol m' },
+  { id:'MibM',  maj:'Mi♭M',  min:'Do m'  },
+  { id:'LabM',  maj:'La♭M',  min:'Fa m'  },
+  { id:'RebM',  maj:'Re♭M',  min:'Si♭m' },
+  { id:'SolbM', maj:'Sol♭M', min:'Mi♭m' },
+  { id:'DobM',  maj:'Do♭M',  min:'La♭m' },
+];
+const TON_ESTADOS = ['','en-proceso','trabajado','dominado'];
+
+function renderTonalidades(){
+  const ton = alumnoDoc.tonalidades || {};
+  ['sharp','flat'].forEach(group => {
+    const list = group==='sharp' ? TON_SHARP : TON_FLAT;
+    const grid = document.getElementById('ton-grid-'+group);
+    if(!grid) return;
+    grid.innerHTML = '';
+    list.forEach(t => {
+      const key = group+'_'+t.id;
+      const estado = ton[key] || '';
+      const cell = document.createElement('div');
+      cell.className = 'ton-cell ' + estado;
+      cell.dataset.key = key;
+      cell.innerHTML = `<div class="ton-maj">${t.maj}</div><div class="ton-min">${t.min}</div>`;
+      cell.onclick = () => {
+        const cur = TON_ESTADOS.indexOf(cell.classList[1] || '');
+        const next = TON_ESTADOS[(cur+1) % TON_ESTADOS.length];
+        cell.className = 'ton-cell ' + next;
+        if(!alumnoDoc.tonalidades) alumnoDoc.tonalidades = {};
+        alumnoDoc.tonalidades[key] = next;
+        updateTonCount();
+      };
+      grid.appendChild(cell);
+    });
+  });
+  updateTonCount();
+}
+
+function updateTonCount(){
+  const ton = alumnoDoc.tonalidades || {};
+  const total = TON_SHARP.length + TON_FLAT.length - 1; // DoM aparece en ambas
+  const done = Object.values(ton).filter(v=>v==='dominado').length;
+  const worked = Object.values(ton).filter(v=>v&&v!=='').length;
+  const el = document.getElementById('ton-count');
+  if(el) el.textContent = worked + ' / ' + total + ' trabajadas';
+}
+
+window.saveTonalidades = async () => {
+  try {
+    await updateDoc(doc(db,'alumnos',currentAlumno.pin),{
+      tonalidades: alumnoDoc.tonalidades || {}
+    });
+    toast('Tonalidades guardadas');
+  } catch(e){ toast('Error al guardar'); console.error(e); }
 };
 
 // ── SECCIONES (técnica, estudios, obras, transcripciones) ────
