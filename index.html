@@ -786,10 +786,10 @@ function renderObras(){
 
     card.innerHTML = `
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
-        <div class="s-card-icon" style="background:#3a2060;font-size:16px">🎷</div>
+        <div class="s-card-icon" style="background:#3a2060;font-family:'Cormorant Garamond',serif;font-size:22px;color:#b090e0">♩</div>
         <div>
-          <div class="s-card-title">${obra.titulo}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}${obra.opus?' · '+obra.opus:''}</div>
+          <div class="s-card-title">${obra.titulo}${obra.opus?', '+obra.opus:''}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}</div>
         </div>
         <span class="s-card-count">${videos.length?videos.length+' vídeo'+(videos.length>1?'s':''):''}</span>
         <span class="chevron">▾</span>
