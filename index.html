@@ -252,6 +252,18 @@
     #cmt-inp-txt{width:100%;background:var(--bg4);border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:inherit;font-size:12px;padding:7px 9px;resize:none;min-height:60px;outline:none;line-height:1.5}
     #cmt-inp-txt:focus{border-color:var(--border2)}
 
+    /* ── VÍDEOS YOUTUBE ── */
+    .yt-section{margin-top:12px}
+    .yt-section-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+    .yt-embed-wrap{position:relative;padding-bottom:56.25%;height:0;border-radius:var(--r-sm);overflow:hidden;margin-bottom:10px;background:#000}
+    .yt-embed-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+    .yt-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-style:italic}
+    .yt-add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+    .yt-thumb{width:80px;height:45px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#111}
+    .yt-item{display:flex;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px;margin-bottom:6px}
+    .yt-item-info{flex:1;min-width:0}
+    .yt-item-url{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
     /* ── ESTRELLAS DE DIFICULTAD (estudios) ── */
     .est-diff-row{display:flex;gap:3px;align-items:center;margin-top:6px}
     .est-diff-lbl{font-size:10px;color:var(--text3);letter-spacing:.5px;margin-right:4px}
@@ -513,7 +525,8 @@ const SECCIONES = [
 ];
 
 const OBRAS_CURSO = [
-  { id:'creston', titulo:'Sonata para Saxofón Alto', compositor:'Paul Creston', opus:'Op. 19', pdf:'CRESTON-SONATA-Alto-Sax-Complete.pdf' },
+  { id:'creston', titulo:'Sonata para Saxofón Alto', compositor:'Paul Creston', opus:'Op. 19',  pdf:'CRESTON-SONATA-Alto-Sax-Complete.pdf' },
+  { id:'mai',     titulo:'Mai',                      compositor:'Ryo Noda',      opus:'',        pdf:'MAI RYO NODA.pdf' },
 ];
 
 const TECNICAS = [
@@ -704,16 +717,73 @@ window.saveTonalidades = async () => {
   } catch(e){ toast('Error al guardar'); console.error(e); }
 };
 
+// ── YOUTUBE HELPERS ──────────────────────────────────────────
+function ytId(url){
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function getObraVideos(obraId){ return JSON.parse(localStorage.getItem('yt_'+obraId)||'[]'); }
+function saveObraVideos(obraId, arr){ localStorage.setItem('yt_'+obraId, JSON.stringify(arr)); }
+
+window.addObraVideo = (obraId) => {
+  const inp = document.getElementById('yt-inp-'+obraId);
+  const url = inp.value.trim();
+  if(!url){ toast('Introduce una URL de YouTube'); return; }
+  const id = ytId(url);
+  if(!id){ toast('URL de YouTube no válida'); return; }
+  const labelInp = document.getElementById('yt-lbl-'+obraId);
+  const label = labelInp.value.trim();
+  const videos = getObraVideos(obraId);
+  videos.push({ id, label, url });
+  saveObraVideos(obraId, videos);
+  inp.value = ''; labelInp.value = '';
+  renderObras();
+  toast('Vídeo añadido');
+};
+
+window.removeObraVideo = (obraId, idx) => {
+  const videos = getObraVideos(obraId);
+  videos.splice(idx, 1);
+  saveObraVideos(obraId, videos);
+  renderObras();
+};
+
 // ── OBRAS ────────────────────────────────────────────────────
 function renderObras(){
   const container = document.getElementById('obras-list');
   if(!container) return;
   container.innerHTML = '';
-  // Obras del curso (hardcoded con PDF)
+
   OBRAS_CURSO.forEach(obra => {
+    const videos = getObraVideos(obra.id);
+    const pdfEncoded = encodeURIComponent(obra.pdf);
     const card = document.createElement('div');
     card.className = 's-card open';
     card.style.marginBottom = '12px';
+
+    const videosHtml = videos.length ? `
+      <div class="yt-section">
+        <div class="yt-section-lbl">Vídeos de referencia</div>
+        ${videos.map((v,i)=>`
+          <div>
+            ${v.label?`<div class="yt-label">${v.label}</div>`:''}
+            <div class="yt-embed-wrap">
+              <iframe src="https://www.youtube-nocookie.com/embed/${v.id}" allowfullscreen loading="lazy"></iframe>
+            </div>
+            ${isProf?`<button class="pdf-tool-btn" style="font-size:11px;padding:3px 10px;margin-bottom:10px" onclick="removeObraVideo('${obra.id}',${i})">🗑 Eliminar vídeo</button>`:''}
+          </div>`).join('')}
+      </div>` : '';
+
+    const addVideoHtml = isProf ? `
+      <div class="yt-section" style="border-top:1px solid var(--border);padding-top:12px;margin-top:12px">
+        <div class="yt-section-lbl">Añadir vídeo de YouTube</div>
+        <div class="yt-add-row">
+          <input class="f-input-sm" id="yt-inp-${obra.id}" placeholder="URL de YouTube" style="flex:2;min-width:160px"/>
+          <input class="f-input-sm" id="yt-lbl-${obra.id}" placeholder="Etiqueta (opcional)" style="flex:1;min-width:100px"/>
+          <button class="btn-add" onclick="addObraVideo('${obra.id}')">Añadir</button>
+        </div>
+      </div>` : '';
+
     card.innerHTML = `
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
         <div class="s-card-icon" style="background:#3a2060;font-size:16px">🎷</div>
@@ -721,12 +791,13 @@ function renderObras(){
           <div class="s-card-title">${obra.titulo}</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}${obra.opus?' · '+obra.opus:''}</div>
         </div>
+        <span class="s-card-count">${videos.length?videos.length+' vídeo'+(videos.length>1?'s':''):''}</span>
         <span class="chevron">▾</span>
       </div>
       <div class="s-card-body">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${videos.length||isProf?'12px':'0'}">
           <button class="btn-primary" style="flex:1;min-width:130px"
-            onclick="openPdf('${obra.pdf}','${obra.titulo} — ${obra.compositor}')">
+            onclick="openPdf('${pdfEncoded}','${obra.titulo} — ${obra.compositor}')">
             📄 Ver partitura
           </button>
           <a href="${obra.pdf}" download="${obra.titulo}.pdf"
@@ -734,12 +805,13 @@ function renderObras(){
             ⬇ Descargar
           </a>
         </div>
+        ${videosHtml}${addVideoHtml}
       </div>`;
     container.appendChild(card);
   });
-  // Obras añadidas por el profesor en Firestore
-  const items = alumnoDoc.obras || [];
-  items.forEach((item, idx) => {
+
+  // Obras Firestore
+  (alumnoDoc.obras||[]).forEach((item, idx) => {
     const estado = item.alumnoEstado || '';
     const div = document.createElement('div');
     div.className = 'item-row';
@@ -1268,16 +1340,34 @@ function showAlumnoDetail(pin){
       </div>`).join('')}
 
     <div class="prof-section-hdr">Obras</div>
-    ${OBRAS_CURSO.map(obra=>`
-      <div class="item-row" style="margin-bottom:8px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+    ${OBRAS_CURSO.map(obra=>{
+      const vids = getObraVideos(obra.id);
+      const pdfEnc = encodeURIComponent(obra.pdf);
+      return `<div class="item-row" style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px">
           <div>
             <div class="item-title" style="margin:0">${obra.titulo}</div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}${obra.opus?' · '+obra.opus:''}</div>
           </div>
-          <button class="btn-comment" onclick="openPdf('${obra.pdf}','${obra.titulo} — ${obra.compositor}')">📄 Ver / Anotar</button>
+          <button class="btn-comment" onclick="openPdf('${pdfEnc}','${obra.titulo} — ${obra.compositor}')">📄 Ver / Anotar</button>
         </div>
-      </div>`).join('')}
+        <div class="yt-section-lbl">Vídeos añadidos (${vids.length})</div>
+        ${vids.map((v,i)=>`
+          <div class="yt-item">
+            <img class="yt-thumb" src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt=""/>
+            <div class="yt-item-info">
+              <div style="font-size:12px;color:var(--text);margin-bottom:2px">${v.label||'Sin etiqueta'}</div>
+              <div class="yt-item-url">${v.url}</div>
+            </div>
+            <button class="btn-del" style="flex-shrink:0" onclick="removeObraVideo('${obra.id}',${i});showAlumnoDetail(viewingAlumno.pin)">✕</button>
+          </div>`).join('')}
+        <div class="yt-add-row">
+          <input class="f-input-sm" id="prof-yt-inp-${obra.id}" placeholder="URL de YouTube" style="flex:2;min-width:140px"/>
+          <input class="f-input-sm" id="prof-yt-lbl-${obra.id}" placeholder="Etiqueta (opcional)" style="flex:1;min-width:90px"/>
+          <button class="btn-add" onclick="profAddVideo('${obra.id}')">Añadir</button>
+        </div>
+      </div>`;
+    }).join('')}
     <div class="add-form" style="margin-top:8px">
       <div class="add-form-title">Añadir obra</div>
       <div class="add-row">
@@ -1359,6 +1449,19 @@ window.delItem = async (pin, sec, idx) => {
     toast('Eliminado');
     showAlumnoDetail(pin);
   } catch(e){ toast('Error'); console.error(e); }
+};
+
+window.profAddVideo = (obraId) => {
+  const url = document.getElementById('prof-yt-inp-'+obraId).value.trim();
+  if(!url){ toast('Introduce una URL de YouTube'); return; }
+  const id = ytId(url);
+  if(!id){ toast('URL de YouTube no válida'); return; }
+  const label = document.getElementById('prof-yt-lbl-'+obraId).value.trim();
+  const videos = getObraVideos(obraId);
+  videos.push({ id, label, url });
+  saveObraVideos(obraId, videos);
+  showAlumnoDetail(viewingAlumno.pin);
+  toast('Vídeo añadido');
 };
 
 window.renameObra = async (pin, idx) => {
