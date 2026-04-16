@@ -1556,20 +1556,34 @@ function renderProfCuriosidades(){
   const el = document.getElementById('pp-cur-list');
   if(!el) return;
   if(!cards.length){ el.innerHTML='<div class="empty">No hay tarjetas aún.</div>'; return; }
+  const n = cards.length;
   el.innerHTML = cards.map((c,idx)=>{
     const vids = c.videos||[];
+    // Position options for the select
+    const opts = Array.from({length:n},(_,i)=>`<option value="${i}" ${i===idx?'selected':''}>${i+1}</option>`).join('');
     return `<div class="item-row" style="margin-bottom:8px">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <!-- header row: order controls + title + delete -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+          <button class="btn-add" style="padding:2px 7px;font-size:11px;line-height:1" onclick="profMoveCurCard(${idx},-1)" ${idx===0?'disabled':''}>▲</button>
+          <button class="btn-add" style="padding:2px 7px;font-size:11px;line-height:1" onclick="profMoveCurCard(${idx},1)" ${idx===n-1?'disabled':''}>▼</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <span style="font-size:10px;color:var(--text3)">Pos.</span>
+          <select class="f-input-sm" style="width:52px;padding:4px 6px;font-size:12px" onchange="profMoveCurCardTo(${idx},+this.value)">${opts}</select>
+        </div>
         <span style="font-size:20px">${c.icon}</span>
-        <span style="font-size:12px;background:var(--bg3);padding:2px 8px;border-radius:10px;border:1px solid var(--border);color:var(--text3)">${c.tipo}</span>
-        <div class="item-title" style="margin:0;flex:1">${c.titulo}</div>
+        <span style="font-size:11px;background:var(--bg3);padding:2px 7px;border-radius:10px;border:1px solid var(--border);color:var(--text3);flex-shrink:0">${c.tipo}</span>
+        <div class="item-title" style="margin:0;flex:1;min-width:80px">${c.titulo}</div>
         <button class="btn-del" onclick="profDelCurCard(${idx})">Eliminar</button>
       </div>
+      <!-- editable fields -->
       <input class="f-input-sm" id="cur-edit-tit-${idx}" value="${c.titulo.replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:6px"/>
       <input class="f-input-sm" id="cur-edit-sub-${idx}" value="${(c.sub||'').replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:6px" placeholder="Subtítulo"/>
       <textarea class="comment-area" id="cur-edit-txt-${idx}" placeholder="Texto (párrafo principal)">${(c.texto&&c.texto[0])||''}</textarea>
       <input class="f-input-sm" id="cur-edit-hl-${idx}" value="${(c.highlight||'').replace(/"/g,'&quot;')}" style="width:100%;margin-top:6px" placeholder="Frase destacada"/>
       <button class="btn-comment" style="margin-top:6px" onclick="profSaveCurCard(${idx})">Guardar cambios</button>
+      <!-- videos -->
       <div class="yt-section-lbl" style="margin-top:12px">Vídeos (${vids.length})</div>
       ${vids.map((v,vi)=>`
         <div class="yt-item">
@@ -1588,6 +1602,26 @@ function renderProfCuriosidades(){
     </div>`;
   }).join('');
 }
+
+window.profMoveCurCard = (idx, dir) => {
+  const cards = getCurCards();
+  const to = idx + dir;
+  if(to < 0 || to >= cards.length) return;
+  [cards[idx], cards[to]] = [cards[to], cards[idx]];
+  saveCurCards(cards);
+  renderProfCuriosidades();
+  renderCuriosidades();
+};
+
+window.profMoveCurCardTo = (from, to) => {
+  if(from === to) return;
+  const cards = getCurCards();
+  const [card] = cards.splice(from, 1);
+  cards.splice(to, 0, card);
+  saveCurCards(cards);
+  renderProfCuriosidades();
+  renderCuriosidades();
+};
 
 window.profDelCurCard = (idx) => {
   const cards = getCurCards();
