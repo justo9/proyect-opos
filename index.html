@@ -291,13 +291,38 @@
     .ton-cell.trabajado .ton-maj{color:var(--green)}
     .ton-cell.trabajado .ton-min{color:var(--green);opacity:.9}
     .ton-cell.trabajado .ton-divider{background:rgba(76,175,130,.4)}
-    .ton-cell.dominado{border-color:var(--gold);background:var(--gold-dim)}
-    .ton-cell.dominado .ton-maj{color:var(--gold)}
-    .ton-cell.dominado .ton-min{color:var(--gold2)}
-    .ton-cell.dominado .ton-divider{background:rgba(201,168,76,.5)}
+    .ton-cell.dominado{border-color:#4caf82;background:rgba(76,175,130,.18)}
+    .ton-cell.dominado .ton-maj{color:#4caf82}
+    .ton-cell.dominado .ton-min{color:#7dd4ae}
+    .ton-cell.dominado .ton-divider{background:rgba(76,175,130,.5)}
     .ton-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .ton-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
     .ton-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+    /* ── CURIOSIDADES ── */
+    .cur-section-hdr{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+    .cur-section-hdr:first-child{margin-top:0}
+    .cur-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+    .cur-card-hdr{padding:14px 16px;display:flex;align-items:flex-start;gap:12px;cursor:pointer}
+    .cur-card-icon{width:36px;height:36px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .cur-card-meta{flex:1;min-width:0}
+    .cur-card-title{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text);line-height:1.3}
+    .cur-card-sub{font-size:11px;color:var(--text3);margin-top:3px}
+    .cur-card-body{display:none;border-top:1px solid var(--border);padding:14px 16px}
+    .cur-card.open > .cur-card-body{display:block}
+    .cur-card.open .chevron{transform:rotate(180deg)}
+    .cur-text{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+    .cur-text:last-child{margin-bottom:0}
+    .cur-highlight{background:var(--gold-dim);border-left:3px solid var(--gold);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:10px 14px;font-size:13px;color:var(--text);line-height:1.6;margin:10px 0;font-family:'Cormorant Garamond',serif;font-size:15px}
+    .cur-rec-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .cur-rec-row:last-child{border-bottom:none;padding-bottom:0}
+    .cur-rec-thumb{width:52px;height:38px;border-radius:6px;background:var(--bg3);object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text3)}
+    .cur-rec-info{flex:1;min-width:0}
+    .cur-rec-title{font-size:13px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:15px;line-height:1.3}
+    .cur-rec-artist{font-size:11px;color:var(--text3);margin-top:2px}
+    .cur-rec-link{font-size:11px;color:var(--gold);text-decoration:none;margin-top:4px;display:inline-block}
+    .cur-rec-link:hover{text-decoration:underline}
+    .cur-tag{display:inline-block;font-size:10px;letter-spacing:.5px;padding:2px 8px;border-radius:10px;border:1px solid var(--border2);color:var(--text3);margin:0 3px 4px 0;background:var(--bg3)}
   </style>
 </head>
 <body>
@@ -355,6 +380,7 @@
     <button class="nav-tab" onclick="showTab('t-extendidas')">Téc. Extendidas</button>
     <button class="nav-tab" onclick="showTab('t-progreso')">Progreso</button>
     <button class="nav-tab" onclick="showTab('t-calendario')">Calendario</button>
+    <button class="nav-tab" onclick="showTab('t-curiosidades')">Curiosidades</button>
   </div>
 
   <!-- TÉCNICA -->
@@ -377,7 +403,7 @@
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg4);border:1px solid var(--border)"></div>Sin trabajar</div>
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(212,162,76,.3);border:1px solid var(--amber)"></div>En proceso</div>
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.2);border:1px solid #5a8c6a"></div>Trabajada</div>
-          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--gold-dim);border:1px solid var(--gold)"></div>Dominada</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.18);border:1px solid #4caf82"></div>Dominada</div>
         </div>
         <button class="save-item-btn" style="margin-top:12px;width:100%" onclick="saveTonalidades()">Guardar tonalidades</button>
       </div>
@@ -419,6 +445,11 @@
 
   <!-- CALENDARIO -->
   <div id="t-calendario" class="tab-content"><div id="cal-list"></div></div>
+
+  <!-- CURIOSIDADES -->
+  <div id="t-curiosidades" class="tab-content">
+    <div id="curiosidades-list"></div>
+  </div>
 </div>
 
 <!-- ══ PROFESOR ══ -->
@@ -644,6 +675,7 @@ function showAlumnoApp(){
   renderTonalidades();
   renderExtendidas();
   renderProgreso();
+  renderCuriosidades();
   loadEventos().then(()=>renderCalendario());
 }
 
@@ -651,7 +683,7 @@ window.showTab = (id) => {
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-tab').forEach((b,i)=>{
-    const ids=['t-tecnica','t-estudios','t-obras','t-transcripciones','t-extendidas','t-progreso','t-calendario'];
+    const ids=['t-tecnica','t-estudios','t-obras','t-transcripciones','t-extendidas','t-progreso','t-calendario','t-curiosidades'];
     b.classList.toggle('active', ids[i]===id);
   });
 };
@@ -788,6 +820,143 @@ window.saveTonalidades = async () => {
     toast('Tonalidades guardadas');
   } catch(e){ toast('Error al guardar'); console.error(e); }
 };
+
+// ── CURIOSIDADES & RECOMENDACIONES ──────────────────────────
+const CURIOSIDADES = [
+  {
+    id:'cur1', icon:'🎵', bg:'#1e2d1e',
+    titulo:'La digitación alternativa del saxofón',
+    sub:'Técnica · Acústica',
+    tags:['Técnica','Acústica','Física'],
+    texto:[
+      'El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.',
+      'Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.',
+    ],
+    highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker'
+  },
+  {
+    id:'cur2', icon:'🎷', bg:'#1e1e2d',
+    titulo:'¿Por qué el saxofón es un instrumento transpositor?',
+    sub:'Teoría · Orquestación',
+    tags:['Teoría','Transposición'],
+    texto:[
+      'El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esto significa que para tocar en Do M de concierto, el saxofonista lee en La M (3 sostenidos). Esta convención se estableció para que los músicos pudieran cambiar entre saxofones de distintos tamaños (soprano, alto, tenor, barítono) usando la misma digitación.',
+      'El saxofón tenor está en Si♭ (como la trompeta), mientras que el soprano también es en Si♭ y el barítono en Mi♭, igual que el alto.',
+    ],
+    highlight:'Truco: Para saber qué nota real suenas en alto, baja un sexta mayor (o una tercera menor) desde la nota escrita.'
+  },
+  {
+    id:'cur3', icon:'🌊', bg:'#1a2228',
+    titulo:'El vibrato en el saxofón',
+    sub:'Expresión · Estilo',
+    tags:['Expresividad','Vibrato','Estilo'],
+    texto:[
+      'A diferencia del vibrato de cuerda o flauta (que oscila en la afinación), el vibrato del saxofón clásico se produce principalmente con la mandíbula (jaw vibrato) y tiene una velocidad y amplitud características que definen el estilo de cada escuela.',
+      'En el jazz, el vibrato se usa de forma más espontánea y puede generarse también con el diafragma. Escucha la diferencia entre Marcel Mule (vibrato estrecho y rápido, escuela francesa) y John Coltrane (vibrato amplio, casi vocal).',
+    ],
+    highlight:'Ejercicio: Practica el vibrato sobre una nota larga a ♩=60, empezando con 2 oscilaciones por tiempo y aumentando progresivamente.'
+  },
+  {
+    id:'cur4', icon:'🏛️', bg:'#22201a',
+    titulo:'Grandes compositores que escribieron para saxofón',
+    sub:'Historia · Repertorio',
+    tags:['Historia','Repertorio','Clásico'],
+    texto:[
+      'Aunque el saxofón nació en el siglo XIX, muchos grandes compositores tardaron en adoptarlo. Hector Berlioz fue uno de los primeros defensores. Luego vinieron obras fundamentales: la Rapsodie de Debussy (1919), la Sinfonía de Glazunov (1934), las piezas de Ibert, Creston, Villa-Lobos, y más recientemente Edison Denisov y John Adams.',
+      'En el repertorio contemporáneo, el saxofón ocupa un lugar protagonista gracias a compositores como Luciano Berio, Kaija Saariaho y Georg Friedrich Haas, que explotan al máximo sus posibilidades tímbricas y técnicas.',
+    ],
+    highlight:'Dato: Debussy compuso su Rapsodie originalmente para una estudiante americana llamada Elise Hall, que tardó 20 años en estrenarla.'
+  },
+  {
+    id:'cur5', icon:'🎙️', bg:'#1a1e28',
+    titulo:'El saxofón en el jazz: de Nueva Orleans al free jazz',
+    sub:'Historia · Jazz',
+    tags:['Jazz','Historia','Estilos'],
+    texto:[
+      'Desde sus primeras apariciones en el ragtime y el jazz de Nueva Orleans, el saxofón se convirtió en voz indispensable del género. Sidney Bechet (soprano) y Coleman Hawkins (tenor) sentaron las bases. Charlie Parker revolucionó la armonía con el bebop en los años 40. John Coltrane llevó el saxofón al límite con el hard bop y el free jazz.',
+      'Hoy, artistas como Kamasi Washington, Donny McCaslin o Ravi Coltrane mezclan jazz, electrónica y world music en propuestas que siguen expandiendo las fronteras del instrumento.',
+    ],
+    highlight:'Escucha: «A Love Supreme» de John Coltrane (1965) — uno de los discos más influyentes de la historia de la música.'
+  },
+];
+
+const RECOMENDACIONES = [
+  {
+    id:'rec1', icon:'🎧', bg:'#1e2020',
+    titulo:'Lista de escucha esencial',
+    sub:'Selección del profesor · Saxofón clásico y jazz',
+    recs:[
+      { emoji:'🎼', titulo:'Rapsodie pour saxophone', artista:'Claude Debussy · Sigma Project', url:'https://youtu.be/Qw2bMHvIBAs' },
+      { emoji:'🎷', titulo:'Concerto for Alto Saxophone', artista:'Alexander Glazunov · Rascher Quartet', url:'https://youtu.be/lV7TKJGBPZA' },
+      { emoji:'🌙', titulo:'A Love Supreme', artista:'John Coltrane Quartet (1965)', url:'https://youtu.be/ll3CMgiUPuU' },
+      { emoji:'🎵', titulo:'Giant Steps', artista:'John Coltrane (1960)', url:'https://youtu.be/2kotK9FNEYU' },
+      { emoji:'🌊', titulo:'Mai (舞)', artista:'Ryo Noda · Nobuya Sugawa', url:'https://youtu.be/2qhEWelWvLk' },
+      { emoji:'🔥', titulo:'Big Dipper Blues', artista:'Bob Mintzer Big Band', url:'https://youtu.be/0QY2dGBdITo' },
+    ]
+  },
+  {
+    id:'rec2', icon:'📚', bg:'#201e1e',
+    titulo:'Lecturas recomendadas',
+    sub:'Libros y recursos sobre saxofón y música',
+    recs:[
+      { emoji:'📖', titulo:'The Art of Saxophone Playing', artista:'Larry Teal — Manual técnico de referencia', url:'' },
+      { emoji:'📖', titulo:'Saxophone Colossus (documental)', artista:'Sonny Rollins en directo — disponible en YouTube', url:'https://youtu.be/6_SYdVMHMgw' },
+      { emoji:'🌐', titulo:'Saxophone.org', artista:'Comunidad internacional y recursos libres', url:'https://www.saxophone.org' },
+    ]
+  },
+];
+
+function renderCuriosidades(){
+  const container = document.getElementById('curiosidades-list');
+  if(!container) return;
+  let html='';
+
+  html+='<div class="cur-section-hdr">Curiosidades musicales</div>';
+  CURIOSIDADES.forEach(c=>{
+    html+=`<div class="cur-card" id="${c.id}">
+      <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
+        <div class="cur-card-icon" style="background:${c.bg}">${c.icon}</div>
+        <div class="cur-card-meta">
+          <div class="cur-card-title">${c.titulo}</div>
+          <div class="cur-card-sub">${c.sub}</div>
+          <div style="margin-top:5px">${c.tags.map(t=>`<span class="cur-tag">${t}</span>`).join('')}</div>
+        </div>
+        <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
+      </div>
+      <div class="cur-card-body">
+        ${c.texto.map(p=>`<p class="cur-text">${p}</p>`).join('')}
+        ${c.highlight?`<div class="cur-highlight">${c.highlight}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  html+='<div class="cur-section-hdr" style="margin-top:24px">Recomendaciones</div>';
+  RECOMENDACIONES.forEach(r=>{
+    html+=`<div class="cur-card" id="${r.id}">
+      <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
+        <div class="cur-card-icon" style="background:${r.bg}">${r.icon}</div>
+        <div class="cur-card-meta">
+          <div class="cur-card-title">${r.titulo}</div>
+          <div class="cur-card-sub">${r.sub}</div>
+        </div>
+        <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
+      </div>
+      <div class="cur-card-body">
+        ${r.recs.map(rec=>`
+          <div class="cur-rec-row">
+            <div class="cur-rec-thumb">${rec.emoji}</div>
+            <div class="cur-rec-info">
+              <div class="cur-rec-title">${rec.titulo}</div>
+              <div class="cur-rec-artist">${rec.artista}</div>
+              ${rec.url?`<a class="cur-rec-link" href="${rec.url}" target="_blank" rel="noopener">▶ Escuchar / Ver</a>`:''}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML=html;
+}
 
 // ── YOUTUBE HELPERS ──────────────────────────────────────────
 function ytId(url){
