@@ -75,6 +75,7 @@
     .nav-tabs::-webkit-scrollbar{display:none}
     .nav-tab{flex-shrink:0;padding:10px 14px;font-size:12px;color:var(--text2);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit;background:transparent;border-top:none;border-left:none;border-right:none}
     .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+    .nav-tab-sep{width:2px;background:var(--border2);margin:8px 4px;border-radius:1px;flex-shrink:0}
 
     /* ── ALUMNO SCREENS ── */
     #s-app{background:var(--bg)}
@@ -277,24 +278,14 @@
     .ton-group-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;margin-top:14px}
     .ton-group-label:first-child{margin-top:0}
     .ton-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:4px}
-    .ton-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 2px 8px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:0}
-    .ton-cell:active{opacity:.75}
-    .ton-ks{display:block;width:100%;margin-bottom:3px}
-    .ton-divider{width:70%;height:1px;background:var(--border2);margin:3px auto}
-    .ton-maj{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--text);line-height:1.2;white-space:nowrap}
-    .ton-min{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:500;color:var(--text2);line-height:1.2;white-space:nowrap}
-    .ton-cell.en-proceso{border-color:var(--amber);background:rgba(212,162,76,.12)}
-    .ton-cell.en-proceso .ton-maj{color:var(--amber)}
-    .ton-cell.en-proceso .ton-min{color:var(--amber);opacity:.8}
-    .ton-cell.en-proceso .ton-divider{background:rgba(212,162,76,.4)}
-    .ton-cell.trabajado{border-color:#5a8c6a;background:rgba(76,175,130,.1)}
-    .ton-cell.trabajado .ton-maj{color:var(--green)}
-    .ton-cell.trabajado .ton-min{color:var(--green);opacity:.9}
-    .ton-cell.trabajado .ton-divider{background:rgba(76,175,130,.4)}
-    .ton-cell.dominado{border-color:#4caf82;background:rgba(76,175,130,.18)}
-    .ton-cell.dominado .ton-maj{color:#4caf82}
-    .ton-cell.dominado .ton-min{color:#7dd4ae}
-    .ton-cell.dominado .ton-divider{background:rgba(76,175,130,.5)}
+    .ton-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;display:flex;flex-direction:column;align-items:center;transition:border-color .2s}
+    .ton-ks{display:block;width:100%;padding:4px 2px 2px}
+    .ton-half{width:100%;text-align:center;padding:4px 2px;cursor:pointer;transition:background .2s;user-select:none;-webkit-user-select:none;font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--text2);line-height:1.3;white-space:nowrap}
+    .ton-half:active{opacity:.75}
+    .ton-half.ton-half-maj{border-top:1px solid var(--border);color:var(--text)}
+    .ton-half.ton-half-min{border-top:1px solid var(--border);color:var(--text2);font-weight:500}
+    .ton-half.en-proceso{background:rgba(212,162,76,.18);color:var(--amber)}
+    .ton-half.trabajado{background:rgba(76,175,130,.2);color:#4caf82}
     .ton-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .ton-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
     .ton-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
@@ -380,6 +371,7 @@
     <button class="nav-tab" onclick="showTab('t-extendidas')">Téc. Extendidas</button>
     <button class="nav-tab" onclick="showTab('t-progreso')">Progreso</button>
     <button class="nav-tab" onclick="showTab('t-calendario')">Calendario</button>
+    <div class="nav-tab-sep"></div>
     <button class="nav-tab" onclick="showTab('t-curiosidades')">Curiosidades</button>
   </div>
 
@@ -400,10 +392,10 @@
         <div class="ton-group-label">Con bemoles ♭ (7 tonalidades)</div>
         <div class="ton-grid" id="ton-grid-flat" style="grid-template-columns:repeat(7,1fr)"></div>
         <div class="ton-legend">
-          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg4);border:1px solid var(--border)"></div>Sin trabajar</div>
-          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(212,162,76,.3);border:1px solid var(--amber)"></div>En proceso</div>
-          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.2);border:1px solid #5a8c6a"></div>Trabajada</div>
-          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.18);border:1px solid #4caf82"></div>Dominada</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg3);border:1px solid var(--border)"></div>Sin trabajar</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(212,162,76,.18);border:1px solid var(--amber)"></div>En proceso</div>
+          <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(76,175,130,.2);border:1px solid #4caf82"></div>Trabajada</div>
+          <div class="ton-leg-item" style="font-size:11px;color:var(--text3)">Mayor / Menor se marcan de forma independiente</div>
         </div>
         <button class="save-item-btn" style="margin-top:12px;width:100%" onclick="saveTonalidades()">Guardar tonalidades</button>
       </div>
@@ -461,6 +453,7 @@
   <div class="prof-nav">
     <button class="prof-nav-btn active" onclick="showProfPanel('pp-alumnos')">Alumnos</button>
     <button class="prof-nav-btn" onclick="showProfPanel('pp-calendario')">Calendario</button>
+    <button class="prof-nav-btn" onclick="showProfPanel('pp-curiosidades')">Curiosidades</button>
   </div>
   <div class="prof-body">
     <!-- panel alumnos -->
@@ -486,6 +479,25 @@
       </div>
       <div class="prof-section-hdr">Eventos actuales</div>
       <div id="prof-cal-list"></div>
+    </div>
+    <!-- panel curiosidades -->
+    <div id="pp-curiosidades" class="prof-panel">
+      <div id="pp-cur-list"></div>
+      <div class="prof-section-hdr" style="margin-top:20px">Añadir tarjeta</div>
+      <div class="add-form">
+        <div class="add-row" style="flex-wrap:wrap;gap:8px">
+          <input class="f-input-sm" id="new-cur-icon" placeholder="Icono (emoji)" style="width:60px;flex:none"/>
+          <select class="f-input-sm" id="new-cur-tipo" style="flex:1;min-width:120px">
+            <option value="curiosidad">Curiosidad</option>
+            <option value="recomendacion">Recomendación</option>
+          </select>
+        </div>
+        <input class="f-input-sm" id="new-cur-titulo" placeholder="Título" style="width:100%;margin-top:6px"/>
+        <input class="f-input-sm" id="new-cur-sub" placeholder="Subtítulo" style="width:100%;margin-top:6px"/>
+        <textarea class="comment-area" id="new-cur-texto" placeholder="Texto del cuerpo (un párrafo)" style="margin-top:6px"></textarea>
+        <input class="f-input-sm" id="new-cur-highlight" placeholder="Frase destacada (opcional)" style="width:100%;margin-top:6px"/>
+        <button class="btn-add" style="width:100%;margin-top:8px" onclick="profAddCurCard()">Añadir tarjeta</button>
+      </div>
     </div>
   </div>
 </div>
@@ -770,7 +782,7 @@ const TON_FLAT = [
   { id:'SolbM', maj:'Sol♭M', min:'Mi♭m' },
   { id:'DobM',  maj:'Do♭M',  min:'La♭m' },
 ];
-const TON_ESTADOS = ['','en-proceso','trabajado','dominado'];
+const TON_ESTADOS = ['','en-proceso','trabajado'];
 
 function renderTonalidades(){
   const ton = alumnoDoc.tonalidades || {};
@@ -781,22 +793,45 @@ function renderTonalidades(){
     if(!grid) return;
     grid.innerHTML = '';
     list.forEach(t => {
-      const key = group+'_'+t.id;
-      const estado = ton[key] || '';
       const acc = TON_ACC[t.id] || 0;
       const svg = tonKeySignatureSvg(acc, isFlat);
       const cell = document.createElement('div');
-      cell.className = 'ton-cell ' + estado;
-      cell.dataset.key = key;
-      cell.innerHTML = `${svg}<div class="ton-maj">${t.maj}</div><div class="ton-divider"></div><div class="ton-min">${t.min}</div>`;
-      cell.onclick = () => {
-        const cur = TON_ESTADOS.indexOf(cell.classList[1] || '');
+      cell.className = 'ton-cell';
+
+      const majKey = group+'_'+t.id+'_maj';
+      const minKey = group+'_'+t.id+'_min';
+      const majState = ton[majKey] || '';
+      const minState = ton[minKey] || '';
+
+      const halfMaj = document.createElement('div');
+      halfMaj.className = 'ton-half ton-half-maj ' + majState;
+      halfMaj.textContent = t.maj;
+      halfMaj.onclick = (e) => {
+        e.stopPropagation();
+        const cur = TON_ESTADOS.indexOf(halfMaj.classList[2] || '');
         const next = TON_ESTADOS[(cur+1) % TON_ESTADOS.length];
-        cell.className = 'ton-cell ' + next;
+        halfMaj.className = 'ton-half ton-half-maj ' + next;
         if(!alumnoDoc.tonalidades) alumnoDoc.tonalidades = {};
-        alumnoDoc.tonalidades[key] = next;
+        alumnoDoc.tonalidades[majKey] = next;
         updateTonCount();
       };
+
+      const halfMin = document.createElement('div');
+      halfMin.className = 'ton-half ton-half-min ' + minState;
+      halfMin.textContent = t.min;
+      halfMin.onclick = (e) => {
+        e.stopPropagation();
+        const cur = TON_ESTADOS.indexOf(halfMin.classList[2] || '');
+        const next = TON_ESTADOS[(cur+1) % TON_ESTADOS.length];
+        halfMin.className = 'ton-half ton-half-min ' + next;
+        if(!alumnoDoc.tonalidades) alumnoDoc.tonalidades = {};
+        alumnoDoc.tonalidades[minKey] = next;
+        updateTonCount();
+      };
+
+      cell.innerHTML = svg;
+      cell.appendChild(halfMaj);
+      cell.appendChild(halfMin);
       grid.appendChild(cell);
     });
   });
@@ -805,11 +840,10 @@ function renderTonalidades(){
 
 function updateTonCount(){
   const ton = alumnoDoc.tonalidades || {};
-  const total = TON_SHARP.length + TON_FLAT.length; // 8 sostenidos + 7 bemoles = 15
-  const done = Object.values(ton).filter(v=>v==='dominado').length;
+  const total = (TON_SHARP.length + TON_FLAT.length) * 2; // 15 × M.Mayor + 15 × M.Menor = 30
   const worked = Object.values(ton).filter(v=>v&&v!=='').length;
   const el = document.getElementById('ton-count');
-  if(el) el.textContent = worked + ' / ' + total + ' trabajadas';
+  if(el) el.textContent = worked + ' / ' + total;
 }
 
 window.saveTonalidades = async () => {
@@ -822,138 +856,77 @@ window.saveTonalidades = async () => {
 };
 
 // ── CURIOSIDADES & RECOMENDACIONES ──────────────────────────
-const CURIOSIDADES = [
-  {
-    id:'cur1', icon:'🎵', bg:'#1e2d1e',
-    titulo:'La digitación alternativa del saxofón',
-    sub:'Técnica · Acústica',
-    tags:['Técnica','Acústica','Física'],
-    texto:[
-      'El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.',
-      'Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.',
-    ],
-    highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker'
-  },
-  {
-    id:'cur2', icon:'🎷', bg:'#1e1e2d',
-    titulo:'¿Por qué el saxofón es un instrumento transpositor?',
-    sub:'Teoría · Orquestación',
-    tags:['Teoría','Transposición'],
-    texto:[
-      'El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esto significa que para tocar en Do M de concierto, el saxofonista lee en La M (3 sostenidos). Esta convención se estableció para que los músicos pudieran cambiar entre saxofones de distintos tamaños (soprano, alto, tenor, barítono) usando la misma digitación.',
-      'El saxofón tenor está en Si♭ (como la trompeta), mientras que el soprano también es en Si♭ y el barítono en Mi♭, igual que el alto.',
-    ],
-    highlight:'Truco: Para saber qué nota real suenas en alto, baja un sexta mayor (o una tercera menor) desde la nota escrita.'
-  },
-  {
-    id:'cur3', icon:'🌊', bg:'#1a2228',
-    titulo:'El vibrato en el saxofón',
-    sub:'Expresión · Estilo',
-    tags:['Expresividad','Vibrato','Estilo'],
-    texto:[
-      'A diferencia del vibrato de cuerda o flauta (que oscila en la afinación), el vibrato del saxofón clásico se produce principalmente con la mandíbula (jaw vibrato) y tiene una velocidad y amplitud características que definen el estilo de cada escuela.',
-      'En el jazz, el vibrato se usa de forma más espontánea y puede generarse también con el diafragma. Escucha la diferencia entre Marcel Mule (vibrato estrecho y rápido, escuela francesa) y John Coltrane (vibrato amplio, casi vocal).',
-    ],
-    highlight:'Ejercicio: Practica el vibrato sobre una nota larga a ♩=60, empezando con 2 oscilaciones por tiempo y aumentando progresivamente.'
-  },
-  {
-    id:'cur4', icon:'🏛️', bg:'#22201a',
-    titulo:'Grandes compositores que escribieron para saxofón',
-    sub:'Historia · Repertorio',
-    tags:['Historia','Repertorio','Clásico'],
-    texto:[
-      'Aunque el saxofón nació en el siglo XIX, muchos grandes compositores tardaron en adoptarlo. Hector Berlioz fue uno de los primeros defensores. Luego vinieron obras fundamentales: la Rapsodie de Debussy (1919), la Sinfonía de Glazunov (1934), las piezas de Ibert, Creston, Villa-Lobos, y más recientemente Edison Denisov y John Adams.',
-      'En el repertorio contemporáneo, el saxofón ocupa un lugar protagonista gracias a compositores como Luciano Berio, Kaija Saariaho y Georg Friedrich Haas, que explotan al máximo sus posibilidades tímbricas y técnicas.',
-    ],
-    highlight:'Dato: Debussy compuso su Rapsodie originalmente para una estudiante americana llamada Elise Hall, que tardó 20 años en estrenarla.'
-  },
-  {
-    id:'cur5', icon:'🎙️', bg:'#1a1e28',
-    titulo:'El saxofón en el jazz: de Nueva Orleans al free jazz',
-    sub:'Historia · Jazz',
-    tags:['Jazz','Historia','Estilos'],
-    texto:[
-      'Desde sus primeras apariciones en el ragtime y el jazz de Nueva Orleans, el saxofón se convirtió en voz indispensable del género. Sidney Bechet (soprano) y Coleman Hawkins (tenor) sentaron las bases. Charlie Parker revolucionó la armonía con el bebop en los años 40. John Coltrane llevó el saxofón al límite con el hard bop y el free jazz.',
-      'Hoy, artistas como Kamasi Washington, Donny McCaslin o Ravi Coltrane mezclan jazz, electrónica y world music en propuestas que siguen expandiendo las fronteras del instrumento.',
-    ],
-    highlight:'Escucha: «A Love Supreme» de John Coltrane (1965) — uno de los discos más influyentes de la historia de la música.'
-  },
-];
+function getCurCards(){
+  const stored = localStorage.getItem('cur_cards');
+  if(stored) return JSON.parse(stored);
+  // defaults
+  const defaults = [
+    { id:'cur1', tipo:'curiosidad', icon:'🎵', bg:'#1e2d1e', titulo:'La digitación alternativa del saxofón', sub:'Técnica · Acústica', tags:['Técnica','Acústica','Física'], texto:['El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.','Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.'], highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker', videos:[] },
+    { id:'cur2', tipo:'curiosidad', icon:'🎷', bg:'#1e1e2d', titulo:'¿Por qué el saxofón es un instrumento transpositor?', sub:'Teoría · Orquestación', tags:['Teoría','Transposición'], texto:['El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esta convención se estableció para que los músicos pudieran cambiar entre saxofones de distintos tamaños usando la misma digitación.','El saxofón tenor está en Si♭ (como la trompeta), mientras que el soprano también es en Si♭ y el barítono en Mi♭, igual que el alto.'], highlight:'Truco: Para saber qué nota real suenas en alto, baja una sexta mayor desde la nota escrita.', videos:[] },
+    { id:'cur3', tipo:'curiosidad', icon:'🌊', bg:'#1a2228', titulo:'El vibrato en el saxofón', sub:'Expresión · Estilo', tags:['Expresividad','Vibrato','Estilo'], texto:['A diferencia del vibrato de cuerda o flauta, el vibrato del saxofón clásico se produce principalmente con la mandíbula (jaw vibrato).','En el jazz, el vibrato se usa de forma más espontánea. Escucha la diferencia entre Marcel Mule y John Coltrane.'], highlight:'Ejercicio: Practica el vibrato sobre una nota larga a ♩=60, empezando con 2 oscilaciones por tiempo.', videos:[] },
+    { id:'cur4', tipo:'curiosidad', icon:'🏛️', bg:'#22201a', titulo:'Grandes compositores que escribieron para saxofón', sub:'Historia · Repertorio', tags:['Historia','Repertorio','Clásico'], texto:['Hector Berlioz fue uno de los primeros defensores del saxofón. Luego vinieron obras fundamentales: la Rapsodie de Debussy (1919), la Sinfonía de Glazunov (1934), las piezas de Ibert, Creston y Villa-Lobos.','En el repertorio contemporáneo destacan Luciano Berio, Kaija Saariaho y Georg Friedrich Haas.'], highlight:'Dato: Debussy compuso su Rapsodie para una estudiante americana que tardó 20 años en estrenarla.', videos:[] },
+    { id:'cur5', tipo:'curiosidad', icon:'🎙️', bg:'#1a1e28', titulo:'El saxofón en el jazz', sub:'Historia · Jazz', tags:['Jazz','Historia','Estilos'], texto:['Sidney Bechet y Coleman Hawkins sentaron las bases. Charlie Parker revolucionó la armonía con el bebop. John Coltrane llevó el saxofón al límite con el free jazz.','Hoy artistas como Kamasi Washington y Donny McCaslin siguen expandiendo las fronteras del instrumento.'], highlight:'Escucha: «A Love Supreme» de John Coltrane (1965).', videos:[] },
+    { id:'rec1', tipo:'recomendacion', icon:'🎧', bg:'#1e2020', titulo:'Lista de escucha esencial', sub:'Selección del profesor · Saxofón clásico y jazz', tags:[], texto:[], highlight:'', videos:[{url:'https://youtu.be/Qw2bMHvIBAs',label:'Rapsodie — Debussy'},{url:'https://youtu.be/ll3CMgiUPuU',label:'A Love Supreme — Coltrane'},{url:'https://youtu.be/2qhEWelWvLk',label:'Mai — Ryo Noda'}] },
+    { id:'rec2', tipo:'recomendacion', icon:'📚', bg:'#201e1e', titulo:'Lecturas recomendadas', sub:'Libros y recursos', tags:[], texto:['The Art of Saxophone Playing (Larry Teal) — Manual técnico de referencia.'], highlight:'', videos:[{url:'https://youtu.be/6_SYdVMHMgw',label:'Saxophone Colossus (documental)'}] },
+  ];
+  localStorage.setItem('cur_cards', JSON.stringify(defaults));
+  return defaults;
+}
 
-const RECOMENDACIONES = [
-  {
-    id:'rec1', icon:'🎧', bg:'#1e2020',
-    titulo:'Lista de escucha esencial',
-    sub:'Selección del profesor · Saxofón clásico y jazz',
-    recs:[
-      { emoji:'🎼', titulo:'Rapsodie pour saxophone', artista:'Claude Debussy · Sigma Project', url:'https://youtu.be/Qw2bMHvIBAs' },
-      { emoji:'🎷', titulo:'Concerto for Alto Saxophone', artista:'Alexander Glazunov · Rascher Quartet', url:'https://youtu.be/lV7TKJGBPZA' },
-      { emoji:'🌙', titulo:'A Love Supreme', artista:'John Coltrane Quartet (1965)', url:'https://youtu.be/ll3CMgiUPuU' },
-      { emoji:'🎵', titulo:'Giant Steps', artista:'John Coltrane (1960)', url:'https://youtu.be/2kotK9FNEYU' },
-      { emoji:'🌊', titulo:'Mai (舞)', artista:'Ryo Noda · Nobuya Sugawa', url:'https://youtu.be/2qhEWelWvLk' },
-      { emoji:'🔥', titulo:'Big Dipper Blues', artista:'Bob Mintzer Big Band', url:'https://youtu.be/0QY2dGBdITo' },
-    ]
-  },
-  {
-    id:'rec2', icon:'📚', bg:'#201e1e',
-    titulo:'Lecturas recomendadas',
-    sub:'Libros y recursos sobre saxofón y música',
-    recs:[
-      { emoji:'📖', titulo:'The Art of Saxophone Playing', artista:'Larry Teal — Manual técnico de referencia', url:'' },
-      { emoji:'📖', titulo:'Saxophone Colossus (documental)', artista:'Sonny Rollins en directo — disponible en YouTube', url:'https://youtu.be/6_SYdVMHMgw' },
-      { emoji:'🌐', titulo:'Saxophone.org', artista:'Comunidad internacional y recursos libres', url:'https://www.saxophone.org' },
-    ]
-  },
-];
+function saveCurCards(cards){ localStorage.setItem('cur_cards', JSON.stringify(cards)); }
 
 function renderCuriosidades(){
   const container = document.getElementById('curiosidades-list');
   if(!container) return;
+  const cards = getCurCards();
+  const curios = cards.filter(c=>c.tipo==='curiosidad');
+  const recs   = cards.filter(c=>c.tipo==='recomendacion');
   let html='';
 
-  html+='<div class="cur-section-hdr">Curiosidades musicales</div>';
-  CURIOSIDADES.forEach(c=>{
-    html+=`<div class="cur-card" id="${c.id}">
-      <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
-        <div class="cur-card-icon" style="background:${c.bg}">${c.icon}</div>
-        <div class="cur-card-meta">
-          <div class="cur-card-title">${c.titulo}</div>
-          <div class="cur-card-sub">${c.sub}</div>
-          <div style="margin-top:5px">${c.tags.map(t=>`<span class="cur-tag">${t}</span>`).join('')}</div>
+  if(curios.length){
+    html+='<div class="cur-section-hdr">Curiosidades musicales</div>';
+    curios.forEach(c=>{
+      const vids = c.videos||[];
+      html+=`<div class="cur-card" id="cc-${c.id}">
+        <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
+          <div class="cur-card-icon" style="background:${c.bg}">${c.icon}</div>
+          <div class="cur-card-meta">
+            <div class="cur-card-title">${c.titulo}</div>
+            <div class="cur-card-sub">${c.sub}</div>
+            ${c.tags&&c.tags.length?`<div style="margin-top:5px">${c.tags.map(t=>`<span class="cur-tag">${t}</span>`).join('')}</div>`:''}
+          </div>
+          <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
         </div>
-        <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
-      </div>
-      <div class="cur-card-body">
-        ${c.texto.map(p=>`<p class="cur-text">${p}</p>`).join('')}
-        ${c.highlight?`<div class="cur-highlight">${c.highlight}</div>`:''}
-      </div>
-    </div>`;
-  });
+        <div class="cur-card-body">
+          ${c.texto.map(p=>`<p class="cur-text">${p}</p>`).join('')}
+          ${c.highlight?`<div class="cur-highlight">${c.highlight}</div>`:''}
+          ${vids.length?`<div style="margin-top:12px">${vids.map(v=>{const id=ytId(v.url);return id?`<div class="cur-rec-row"><div class="cur-rec-thumb"><img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:52px;height:38px;object-fit:cover;border-radius:4px"/></div><div class="cur-rec-info"><div class="cur-rec-title">${v.label||'Vídeo'}</div><a class="cur-rec-link" href="${v.url}" target="_blank" rel="noopener">▶ Ver en YouTube</a></div></div>`:''}).join('')}</div>`:''}
+        </div>
+      </div>`;
+    });
+  }
 
-  html+='<div class="cur-section-hdr" style="margin-top:24px">Recomendaciones</div>';
-  RECOMENDACIONES.forEach(r=>{
-    html+=`<div class="cur-card" id="${r.id}">
-      <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
-        <div class="cur-card-icon" style="background:${r.bg}">${r.icon}</div>
-        <div class="cur-card-meta">
-          <div class="cur-card-title">${r.titulo}</div>
-          <div class="cur-card-sub">${r.sub}</div>
+  if(recs.length){
+    html+='<div class="cur-section-hdr" style="margin-top:20px">Recomendaciones</div>';
+    recs.forEach(r=>{
+      const vids = r.videos||[];
+      html+=`<div class="cur-card" id="cc-${r.id}">
+        <div class="cur-card-hdr" onclick="this.closest('.cur-card').classList.toggle('open')">
+          <div class="cur-card-icon" style="background:${r.bg}">${r.icon}</div>
+          <div class="cur-card-meta">
+            <div class="cur-card-title">${r.titulo}</div>
+            <div class="cur-card-sub">${r.sub}</div>
+          </div>
+          <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
         </div>
-        <span class="chevron" style="margin-left:8px;flex-shrink:0">▾</span>
-      </div>
-      <div class="cur-card-body">
-        ${r.recs.map(rec=>`
-          <div class="cur-rec-row">
-            <div class="cur-rec-thumb">${rec.emoji}</div>
-            <div class="cur-rec-info">
-              <div class="cur-rec-title">${rec.titulo}</div>
-              <div class="cur-rec-artist">${rec.artista}</div>
-              ${rec.url?`<a class="cur-rec-link" href="${rec.url}" target="_blank" rel="noopener">▶ Escuchar / Ver</a>`:''}
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  });
+        <div class="cur-card-body">
+          ${r.texto&&r.texto.length?r.texto.map(p=>`<p class="cur-text">${p}</p>`).join(''):''}
+          ${r.highlight?`<div class="cur-highlight">${r.highlight}</div>`:''}
+          ${vids.length?`<div style="margin-top:8px">${vids.map(v=>{const id=ytId(v.url);return id?`<div class="cur-rec-row"><div class="cur-rec-thumb"><img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" style="width:52px;height:38px;object-fit:cover;border-radius:4px"/></div><div class="cur-rec-info"><div class="cur-rec-title">${v.label||'Vídeo'}</div><a class="cur-rec-link" href="${v.url}" target="_blank" rel="noopener">▶ Ver en YouTube</a></div></div>`:''}).join('')}</div>`:''}
+        </div>
+      </div>`;
+    });
+  }
 
   container.innerHTML=html;
 }
@@ -1573,8 +1546,116 @@ window.showProfPanel = (id) => {
   document.querySelectorAll('.prof-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.prof-nav-btn').forEach((b,i)=>{
-    b.classList.toggle('active',['pp-alumnos','pp-calendario'][i]===id);
+    b.classList.toggle('active',['pp-alumnos','pp-calendario','pp-curiosidades'][i]===id);
   });
+  if(id==='pp-curiosidades') renderProfCuriosidades();
+};
+
+function renderProfCuriosidades(){
+  const cards = getCurCards();
+  const el = document.getElementById('pp-cur-list');
+  if(!el) return;
+  if(!cards.length){ el.innerHTML='<div class="empty">No hay tarjetas aún.</div>'; return; }
+  el.innerHTML = cards.map((c,idx)=>{
+    const vids = c.videos||[];
+    return `<div class="item-row" style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:20px">${c.icon}</span>
+        <span style="font-size:12px;background:var(--bg3);padding:2px 8px;border-radius:10px;border:1px solid var(--border);color:var(--text3)">${c.tipo}</span>
+        <div class="item-title" style="margin:0;flex:1">${c.titulo}</div>
+        <button class="btn-del" onclick="profDelCurCard(${idx})">Eliminar</button>
+      </div>
+      <input class="f-input-sm" id="cur-edit-tit-${idx}" value="${c.titulo.replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:6px"/>
+      <input class="f-input-sm" id="cur-edit-sub-${idx}" value="${(c.sub||'').replace(/"/g,'&quot;')}" style="width:100%;margin-bottom:6px" placeholder="Subtítulo"/>
+      <textarea class="comment-area" id="cur-edit-txt-${idx}" placeholder="Texto (párrafo principal)">${(c.texto&&c.texto[0])||''}</textarea>
+      <input class="f-input-sm" id="cur-edit-hl-${idx}" value="${(c.highlight||'').replace(/"/g,'&quot;')}" style="width:100%;margin-top:6px" placeholder="Frase destacada"/>
+      <button class="btn-comment" style="margin-top:6px" onclick="profSaveCurCard(${idx})">Guardar cambios</button>
+      <div class="yt-section-lbl" style="margin-top:12px">Vídeos (${vids.length})</div>
+      ${vids.map((v,vi)=>`
+        <div class="yt-item">
+          ${ytId(v.url)?`<img class="yt-thumb" src="https://img.youtube.com/vi/${ytId(v.url)}/mqdefault.jpg" alt=""/>`:'<div class="yt-thumb" style="display:flex;align-items:center;justify-content:center;font-size:20px">▶</div>'}
+          <div class="yt-item-info">
+            <div style="font-size:12px;color:var(--text);margin-bottom:2px">${v.label||'Sin etiqueta'}</div>
+            <div class="yt-item-url">${v.url}</div>
+          </div>
+          <button class="btn-del" style="flex-shrink:0" onclick="profDelCurVideo(${idx},${vi})">✕</button>
+        </div>`).join('')}
+      <div class="yt-add-row" style="margin-top:6px">
+        <input class="f-input-sm" id="cur-yt-url-${idx}" placeholder="URL de YouTube" style="flex:2;min-width:120px"/>
+        <input class="f-input-sm" id="cur-yt-lbl-${idx}" placeholder="Etiqueta" style="flex:1;min-width:80px"/>
+        <button class="btn-add" onclick="profAddCurVideo(${idx})">Añadir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.profDelCurCard = (idx) => {
+  const cards = getCurCards();
+  cards.splice(idx,1);
+  saveCurCards(cards);
+  renderProfCuriosidades();
+  renderCuriosidades();
+  toast('Tarjeta eliminada');
+};
+
+window.profSaveCurCard = (idx) => {
+  const cards = getCurCards();
+  const c = cards[idx];
+  c.titulo = document.getElementById('cur-edit-tit-'+idx).value.trim() || c.titulo;
+  c.sub = document.getElementById('cur-edit-sub-'+idx).value.trim();
+  const txt = document.getElementById('cur-edit-txt-'+idx).value.trim();
+  if(txt) c.texto = [txt]; else c.texto = [];
+  c.highlight = document.getElementById('cur-edit-hl-'+idx).value.trim();
+  saveCurCards(cards);
+  renderProfCuriosidades();
+  renderCuriosidades();
+  toast('Guardado');
+};
+
+window.profAddCurVideo = (idx) => {
+  const urlEl = document.getElementById('cur-yt-url-'+idx);
+  const lblEl = document.getElementById('cur-yt-lbl-'+idx);
+  const url = urlEl.value.trim();
+  if(!url) return;
+  const cards = getCurCards();
+  if(!cards[idx].videos) cards[idx].videos=[];
+  cards[idx].videos.push({url, label: lblEl.value.trim()});
+  saveCurCards(cards);
+  urlEl.value=''; lblEl.value='';
+  renderProfCuriosidades();
+  renderCuriosidades();
+  toast('Vídeo añadido');
+};
+
+window.profDelCurVideo = (idx, vi) => {
+  const cards = getCurCards();
+  cards[idx].videos.splice(vi,1);
+  saveCurCards(cards);
+  renderProfCuriosidades();
+  renderCuriosidades();
+};
+
+window.profAddCurCard = () => {
+  const icon = document.getElementById('new-cur-icon').value.trim() || '🎵';
+  const tipo = document.getElementById('new-cur-tipo').value;
+  const titulo = document.getElementById('new-cur-titulo').value.trim();
+  if(!titulo){ toast('Escribe un título'); return; }
+  const sub = document.getElementById('new-cur-sub').value.trim();
+  const texto = document.getElementById('new-cur-texto').value.trim();
+  const highlight = document.getElementById('new-cur-highlight').value.trim();
+  const cards = getCurCards();
+  const bgs = ['#1e2d1e','#1e1e2d','#1a2228','#22201a','#1a1e28','#201e1e','#1e2020'];
+  const bg = bgs[cards.length % bgs.length];
+  cards.push({ id:'c_'+Date.now(), tipo, icon, bg, titulo, sub, tags:[], texto: texto?[texto]:[], highlight, videos:[] });
+  saveCurCards(cards);
+  document.getElementById('new-cur-icon').value='';
+  document.getElementById('new-cur-titulo').value='';
+  document.getElementById('new-cur-sub').value='';
+  document.getElementById('new-cur-texto').value='';
+  document.getElementById('new-cur-highlight').value='';
+  renderProfCuriosidades();
+  renderCuriosidades();
+  toast('Tarjeta añadida');
 };
 
 function renderAlumnosOverview(){
