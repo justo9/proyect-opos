@@ -277,19 +277,24 @@
     .ton-group-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;margin-top:14px}
     .ton-group-label:first-child{margin-top:0}
     .ton-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;margin-bottom:4px}
-    .ton-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 2px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none}
+    .ton-cell{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 2px 8px;text-align:center;cursor:pointer;transition:all .2s;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:0}
     .ton-cell:active{opacity:.75}
-    .ton-maj{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--text);line-height:1.1}
-    .ton-min{font-size:10px;color:var(--text3);margin-top:3px}
+    .ton-ks{display:block;width:100%;margin-bottom:3px}
+    .ton-divider{width:70%;height:1px;background:var(--border2);margin:3px auto}
+    .ton-maj{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--text);line-height:1.2;white-space:nowrap}
+    .ton-min{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:500;color:var(--text2);line-height:1.2;white-space:nowrap}
     .ton-cell.en-proceso{border-color:var(--amber);background:rgba(212,162,76,.12)}
     .ton-cell.en-proceso .ton-maj{color:var(--amber)}
-    .ton-cell.en-proceso .ton-min{color:var(--amber);opacity:.7}
+    .ton-cell.en-proceso .ton-min{color:var(--amber);opacity:.8}
+    .ton-cell.en-proceso .ton-divider{background:rgba(212,162,76,.4)}
     .ton-cell.trabajado{border-color:#5a8c6a;background:rgba(76,175,130,.1)}
     .ton-cell.trabajado .ton-maj{color:var(--green)}
-    .ton-cell.trabajado .ton-min{color:var(--green);opacity:.8}
+    .ton-cell.trabajado .ton-min{color:var(--green);opacity:.9}
+    .ton-cell.trabajado .ton-divider{background:rgba(76,175,130,.4)}
     .ton-cell.dominado{border-color:var(--gold);background:var(--gold-dim)}
     .ton-cell.dominado .ton-maj{color:var(--gold)}
     .ton-cell.dominado .ton-min{color:var(--gold2)}
+    .ton-cell.dominado .ton-divider{background:rgba(201,168,76,.5)}
     .ton-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .ton-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
     .ton-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
@@ -337,7 +342,7 @@
       <div class="alumno-avatar" id="hdr-avatar" style="width:32px;height:32px;font-size:15px;display:none">?</div>
       <div>
         <div class="hdr-brand">Aula de Saxofón</div>
-        <div id="hdr-alumno-name" style="font-size:11px;color:var(--gold);letter-spacing:.3px;margin-top:1px"></div>
+        <div id="hdr-alumno-name" style="font-size:11px;color:var(--gold);letter-spacing:.3px;margin-top:1px"><span id="hdr-alu-nombre"></span><span id="hdr-alu-curso" style="color:var(--text3);margin-left:6px"></span></div>
       </div>
     </div>
     <button class="btn-out" onclick="logout()">Salir</button>
@@ -364,8 +369,10 @@
         <span class="chevron">▾</span>
       </div>
       <div class="s-card-body">
-        <div class="ton-grid" id="ton-grid-sharp" style="margin-bottom:6px"></div>
-        <div class="ton-grid" id="ton-grid-flat"></div>
+        <div class="ton-group-label">Con sostenidos ♯ (8 tonalidades)</div>
+        <div class="ton-grid" id="ton-grid-sharp" style="margin-bottom:10px"></div>
+        <div class="ton-group-label">Con bemoles ♭ (7 tonalidades)</div>
+        <div class="ton-grid" id="ton-grid-flat" style="grid-template-columns:repeat(7,1fr)"></div>
         <div class="ton-legend">
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:var(--bg4);border:1px solid var(--border)"></div>Sin trabajar</div>
           <div class="ton-leg-item"><div class="ton-leg-dot" style="background:rgba(212,162,76,.3);border:1px solid var(--amber)"></div>En proceso</div>
@@ -627,7 +634,8 @@ function showAlumnoApp(){
   const hdrAvatar = document.getElementById('hdr-avatar');
   hdrAvatar.textContent = inicial;
   hdrAvatar.style.display = 'flex';
-  document.getElementById('hdr-alumno-name').textContent = d.nombre || '';
+  document.getElementById('hdr-alu-nombre').textContent = d.nombre || '';
+  document.getElementById('hdr-alu-curso').textContent = d.curso ? '· ' + d.curso : '';
   document.getElementById('alu-trimestre') && (document.getElementById('alu-trimestre').textContent = (d.trimestre||1)+'.º Trimestre');
   showScreen('s-app');
   renderSecciones();
@@ -649,7 +657,69 @@ window.showTab = (id) => {
 };
 
 // ── TONALIDADES ─────────────────────────────────────────────
-const TON_SHARP = [
+// Key signature SVG generator
+// Staff: 5 lines, height 20px. Each line 4px apart (0,4,8,12,16).
+// Accidentals placed at correct staff positions (treble clef, concert pitch).
+// Sharp positions (y): F5=1, C5=5, G5=-1, D5=3, A4=7, E5=1(oct), B4=5(oct)
+// In our 20px staff (top line y=2, spacing=4): line1=2,line2=6,line3=10,line4=14,line5=18
+// Note positions relative to top line (y=2), each step = 2px:
+//  F5: top-1step = 2-2= 0 (above staff)
+//  C5: line2 centre = 6
+//  G5: above staff more = -4
+//  D5: between line1&2 = 4
+//  A4: between line2&3 = 8
+//  E4: line3 = 10
+//  B4: between line3&4 = 12
+// Flat positions (y): B4=12, E4=10, A4=8, D4+oct: but standard treble:
+//  Bb4=12, Eb4=10(?), let's use standard positions
+// Standard treble clef sharp order: F5,C5,G5,D5,A4,E5,B4
+// Standard treble clef flat order:  B4,E4,A4,D4,G4,C4,F4
+// We'll position them vertically in the small SVG staff
+function tonKeySignatureSvg(accidentals, isFlat){
+  const W=46, H=32;
+  const staffTop=8, lineGap=4, nLines=5;
+  // y positions of the 5 staff lines
+  const lineY = Array.from({length:nLines},(_,i)=>staffTop+i*lineGap);
+  // Staff lines SVG
+  let lines='';
+  for(let i=0;i<nLines;i++){
+    lines+=`<line x1="2" y1="${lineY[i]}" x2="${W-2}" y2="${lineY[i]}" stroke="currentColor" stroke-width="0.7" opacity="0.5"/>`;
+  }
+  if(accidentals===0){
+    // C major / A minor — just staff, no symbol
+    return `<svg class="ton-ks" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${lines}</svg>`;
+  }
+  // Sharp y positions (treble clef, top line = staffTop):
+  // F5(top-2)=staffTop-2*2+staffTop => relative semitone steps from B4 center
+  // Let's use direct y coords (stepsize=2 half-step, lineGap=4 = 1 whole step = 2 halfsteps)
+  // staffTop = y of top line (E5 line), each note step down = +2px
+  // E5=staffTop, D5=staffTop+2, C5=staffTop+4, B4=staffTop+6, A4=staffTop+8
+  // G4=staffTop+10, F4=staffTop+12 ...  F5=staffTop-2 (above staff)
+  const sharpY  = [staffTop-2, staffTop+4, staffTop-4, staffTop+2, staffTop+6, staffTop+0, staffTop+4];
+  // Flats: Bb4=staffTop+6, Eb5=staffTop+2, Ab4=staffTop+8, Db5=staffTop+4, Gb4=staffTop+10, Cb5=staffTop+6, Fb4=staffTop+12
+  const flatY   = [staffTop+6, staffTop+2, staffTop+8, staffTop+4, staffTop+10, staffTop+6, staffTop+12];
+  const positions = isFlat ? flatY : sharpY;
+  const sym = isFlat ? '♭' : '♯';
+  const symW = isFlat ? 6 : 7;
+  const xStart = 4;
+  const xStep  = (W - xStart - 6) / Math.max(accidentals,1);
+  let syms='';
+  for(let i=0;i<accidentals;i++){
+    const x = xStart + i * Math.min(xStep, 7);
+    const y = positions[i];
+    const fs = isFlat ? 9 : 8;
+    syms+=`<text x="${x}" y="${y+fs*0.38}" font-size="${fs}" font-family="serif" fill="currentColor" opacity="0.9" text-anchor="middle">${sym}</text>`;
+  }
+  return `<svg class="ton-ks" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible">${lines}${syms}</svg>`;
+}
+
+// Accidental count per key
+const TON_ACC = {
+  'DoM':0,'SolM':1,'ReM':2,'LaM':3,'MiM':4,'SiM':5,'FasM':6,'DosM':7,
+  'FaM':1,'SibM':2,'MibM':3,'LabM':4,'RebM':5,'SolbM':6,'DobM':7
+};
+
+
   { id:'DoM',   maj:'Do M',   min:'La m'  },
   { id:'SolM',  maj:'Sol M',  min:'Mi m'  },
   { id:'ReM',   maj:'Re M',   min:'Si m'  },
@@ -660,7 +730,6 @@ const TON_SHARP = [
   { id:'DosM',  maj:'Do♯M',  min:'La♯m' },
 ];
 const TON_FLAT = [
-  { id:'DoM',   maj:'Do M',   min:'La m'  },
   { id:'FaM',   maj:'Fa M',   min:'Re m'  },
   { id:'SibM',  maj:'Si♭M',  min:'Sol m' },
   { id:'MibM',  maj:'Mi♭M',  min:'Do m'  },
@@ -675,16 +744,19 @@ function renderTonalidades(){
   const ton = alumnoDoc.tonalidades || {};
   ['sharp','flat'].forEach(group => {
     const list = group==='sharp' ? TON_SHARP : TON_FLAT;
+    const isFlat = group==='flat';
     const grid = document.getElementById('ton-grid-'+group);
     if(!grid) return;
     grid.innerHTML = '';
     list.forEach(t => {
       const key = group+'_'+t.id;
       const estado = ton[key] || '';
+      const acc = TON_ACC[t.id] || 0;
+      const svg = tonKeySignatureSvg(acc, isFlat);
       const cell = document.createElement('div');
       cell.className = 'ton-cell ' + estado;
       cell.dataset.key = key;
-      cell.innerHTML = `<div class="ton-maj">${t.maj}</div><div class="ton-min">${t.min}</div>`;
+      cell.innerHTML = `${svg}<div class="ton-maj">${t.maj}</div><div class="ton-divider"></div><div class="ton-min">${t.min}</div>`;
       cell.onclick = () => {
         const cur = TON_ESTADOS.indexOf(cell.classList[1] || '');
         const next = TON_ESTADOS[(cur+1) % TON_ESTADOS.length];
@@ -701,7 +773,7 @@ function renderTonalidades(){
 
 function updateTonCount(){
   const ton = alumnoDoc.tonalidades || {};
-  const total = TON_SHARP.length + TON_FLAT.length - 1; // DoM aparece en ambas
+  const total = TON_SHARP.length + TON_FLAT.length; // 8 sostenidos + 7 bemoles = 15
   const done = Object.values(ton).filter(v=>v==='dominado').length;
   const worked = Object.values(ton).filter(v=>v&&v!=='').length;
   const el = document.getElementById('ton-count');
@@ -1375,7 +1447,20 @@ function showAlumnoDetail(pin){
     <button class="back-btn" onclick="renderAlumnosOverview()">← Volver a alumnos</button>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
       <div class="alu-av" style="width:48px;height:48px;font-size:22px">${(a.nombre||'A')[0]}</div>
-      <div><div class="alu-nm">${a.nombre||'Alumno'}</div><div class="alu-pin">PIN: ${a.pin}</div></div>
+      <div>
+        <div class="alu-nm">${a.nombre||'Alumno'}</div>
+        <div class="alu-pin">PIN: ${a.pin}</div>
+        <div style="font-size:11px;color:var(--gold);margin-top:2px">${a.curso||''}</div>
+      </div>
+    </div>
+
+    <div class="prof-section-hdr" style="margin-bottom:8px">Datos del alumno</div>
+    <div class="add-form" style="margin-bottom:16px">
+      <div class="add-row" style="gap:8px;flex-wrap:wrap;align-items:center">
+        <div style="font-size:11px;color:var(--text3);white-space:nowrap">Curso:</div>
+        <input class="f-input-sm" id="prof-alu-curso" placeholder="Ej: 3.º Enseñanzas Profesionales" value="${a.curso||''}" style="flex:1;min-width:200px"/>
+        <button class="btn-add" onclick="saveCursoAlumno('${pin}')">Guardar</button>
+      </div>
     </div>
 
     <div class="prof-section-hdr">Progreso del curso</div>
@@ -1505,6 +1590,16 @@ function showAlumnoDetail(pin){
     }).join('')}
   `;
 }
+
+window.saveCursoAlumno = async (pin) => {
+  const curso = document.getElementById('prof-alu-curso').value.trim();
+  try {
+    await updateDoc(doc(db,'alumnos',pin),{ curso });
+    const a = allAlumnos.find(x=>x.pin===pin);
+    if(a){ a.curso = curso; if(viewingAlumno?.pin===pin) viewingAlumno.curso=curso; }
+    toast('Curso guardado');
+  } catch(e){ toast('Error al guardar'); console.error(e); }
+};
 
 window.saveProgreso = async (pin) => {
   const t1=parseInt(document.getElementById('ps-t1').value)||0;
