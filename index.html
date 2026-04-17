@@ -634,6 +634,7 @@ window.switchTab = (t) => {
 };
 
 window.loginAlumno = async () => {
+  await ensureConfig();
   const pin = [0,1,2,3].map(i=>document.getElementById('p'+i).value).join('');
   if(pin.length<4){ setErr('Introduce los 4 dígitos'); return; }
   try {
@@ -647,6 +648,7 @@ window.loginAlumno = async () => {
 };
 
 window.loginProf = async () => {
+  await ensureConfig();
   try {
     await signInWithEmailAndPassword(auth,
       document.getElementById('prf-email').value,
@@ -846,6 +848,21 @@ function updateTonCount(){
   if(el) el.textContent = worked + ' / ' + total;
 }
 
+// Estudios helpers
+function getEstDoc(){ return alumnoDoc.estudios || (alumnoDoc.estudios = {}); }
+function getEstColDoc(colId){ const e=getEstDoc(); return e[colId]||(e[colId]={}); }
+function getEstItem(colId,idx){ const c=getEstColDoc(colId); return c[idx]||(c[idx]={}); }
+
+let _estSaveTimer=null;
+function _saveEstudios(){
+  clearTimeout(_estSaveTimer);
+  _estSaveTimer=setTimeout(()=>{
+    if(!currentAlumno) return;
+    updateDoc(doc(db,'alumnos',currentAlumno.pin),{ estudios: alumnoDoc.estudios||{} })
+      .catch(e=>console.error('saveEstudios:',e));
+  }, 1200);
+}
+
 window.saveTonalidades = async () => {
   try {
     await updateDoc(doc(db,'alumnos',currentAlumno.pin),{
@@ -857,8 +874,7 @@ window.saveTonalidades = async () => {
 
 // ── CURIOSIDADES & RECOMENDACIONES ──────────────────────────
 function getCurCards(){
-  const stored = localStorage.getItem('cur_cards');
-  if(stored) return JSON.parse(stored);
+  if(globalConfig.curiosidades.cards) return globalConfig.curiosidades.cards;
   // defaults
   const defaults = [
     { id:'cur1', tipo:'curiosidad', icon:'🎵', bg:'#1e2d1e', titulo:'La digitación alternativa del saxofón', sub:'Técnica · Acústica', tags:['Técnica','Acústica','Física'], texto:['El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.','Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.'], highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker', videos:[] },
@@ -869,11 +885,14 @@ function getCurCards(){
     { id:'rec1', tipo:'recomendacion', icon:'🎧', bg:'#1e2020', titulo:'Lista de escucha esencial', sub:'Selección del profesor · Saxofón clásico y jazz', tags:[], texto:[], highlight:'', videos:[{url:'https://youtu.be/Qw2bMHvIBAs',label:'Rapsodie — Debussy'},{url:'https://youtu.be/ll3CMgiUPuU',label:'A Love Supreme — Coltrane'},{url:'https://youtu.be/2qhEWelWvLk',label:'Mai — Ryo Noda'}] },
     { id:'rec2', tipo:'recomendacion', icon:'📚', bg:'#201e1e', titulo:'Lecturas recomendadas', sub:'Libros y recursos', tags:[], texto:['The Art of Saxophone Playing (Larry Teal) — Manual técnico de referencia.'], highlight:'', videos:[{url:'https://youtu.be/6_SYdVMHMgw',label:'Saxophone Colossus (documental)'}] },
   ];
-  localStorage.setItem('cur_cards', JSON.stringify(defaults));
+  saveCurCards(defaults);
   return defaults;
 }
 
-function saveCurCards(cards){ localStorage.setItem('cur_cards', JSON.stringify(cards)); }
+function saveCurCards(cards){
+  globalConfig.curiosidades.cards = cards;
+  setDoc(doc(db,'config','curiosidades'), { cards }).catch(e=>console.error('saveCurCards:',e));
+}
 
 function renderCuriosidades(){
   const container = document.getElementById('curiosidades-list');
@@ -936,10 +955,23 @@ function ytId(url){
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
 }
-function getObraVideos(obraId){ return JSON.parse(localStorage.getItem('yt_'+obraId)||'[]'); }
-function saveObraVideos(obraId, arr){ localStorage.setItem('yt_'+obraId, JSON.stringify(arr)); }
-function getObraEjercicios(obraId){ return JSON.parse(localStorage.getItem('ej_'+obraId)||'[]'); }
-function saveObraEjercicios(obraId, arr){ localStorage.setItem('ej_'+obraId, JSON.stringify(arr)); }
+function _obraCfg(obraId){ return globalConfig.obras[obraId] || {}; }
+function _saveObrasCfg(){ setDoc(doc(db,'config','obras'), globalConfig.obras).catch(e=>console.error('saveObras:',e)); }
+function getObraVideos(obraId){ return _obraCfg(obraId).videos || []; }
+function saveObraVideos(obraId, arr){
+  if(!globalConfig.obras[obraId]) globalConfig.obras[obraId]={};
+  globalConfig.obras[obraId].videos = arr;
+  _saveObrasCfg();
+}
+function getObraEjercicios(obraId){ return _obraCfg(obraId).ejercicios || []; }
+function saveObraEjercicios(obraId, arr){
+  if(!globalConfig.obras[obraId]) globalConfig.obras[obraId]={};
+  globalConfig.obras[obraId].ejercicios = arr;
+  _saveObrasCfg();
+}
+function getObraTitulo(obra){
+  return _obraCfg(obra.id).titulo || (obra.titulo + (obra.opus ? ', '+obra.opus : ''));
+}
 
 window.addObraEjercicio = (obraId) => {
   const inp = document.getElementById('ej-inp-'+obraId);
@@ -1073,7 +1105,7 @@ function renderObras(){
       <div class="s-card-hdr" onclick="this.closest('.s-card').classList.toggle('open')">
         <div class="s-card-icon" style="background:#3a2060;font-family:'Cormorant Garamond',serif;font-size:22px;color:#b090e0">♩</div>
         <div>
-          <div class="s-card-title">${localStorage.getItem('obra_tit_'+obra.id)||(obra.titulo+(obra.opus?', '+obra.opus:''))}</div>
+          <div class="s-card-title">${getObraTitulo(obra)}</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${obra.compositor}</div>
         </div>
         <span class="s-card-count">${videos.length?videos.length+' vídeo'+(videos.length>1?'s':''):''}</span>
@@ -1115,6 +1147,32 @@ function renderObras(){
   });
 }
 
+// ── GLOBAL CONFIG (Firestore-backed) ────────────────────────
+let globalConfig = { obras: {}, curiosidades: { cards: null } };
+let _configReady = null;
+
+async function loadGlobalConfig(){
+  try {
+    const [curSnap, obrasSnap] = await Promise.all([
+      getDoc(doc(db,'config','curiosidades')),
+      getDoc(doc(db,'config','obras'))
+    ]);
+    if(curSnap.exists() && curSnap.data().cards) globalConfig.curiosidades = curSnap.data();
+    if(obrasSnap.exists()) globalConfig.obras = obrasSnap.data();
+  } catch(e){ console.warn('Config fetch failed, using defaults:', e); }
+}
+
+function ensureConfig(){
+  if(!_configReady) _configReady = loadGlobalConfig();
+  return _configReady;
+}
+// Start loading immediately
+ensureConfig();
+
+function pdfKey(src){
+  return decodeURIComponent(src).replace(/[^a-zA-Z0-9]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+}
+
 // ── PDF VIEWER ───────────────────────────────────────────────
 let _pdf=null, _pdfPg=1, _pdfZoom=1.3, _pdfSrc='';
 let _strokes={}, _curStr=null, _dColor='#f4c842', _dWidth=3, _dMode='pen', _drawing=false;
@@ -1122,8 +1180,10 @@ let _cmts={}, _cmtPos=null;
 
 window.openPdf = (src, title) => {
   _pdfSrc=src; _pdfPg=1;
-  _strokes=JSON.parse(localStorage.getItem('dr:'+src)||'{}');
-  _cmts=JSON.parse(localStorage.getItem('cm:'+src)||'{}');
+  const _ak = pdfKey(src);
+  const _ad = (alumnoDoc.anotaciones && alumnoDoc.anotaciones[_ak]) || {};
+  _strokes = _ad.strokes || {};
+  _cmts    = _ad.cmts    || {};
   const modal=document.getElementById('pdf-modal');
   modal.classList.add('open');
   document.getElementById('pdf-ttl').textContent=title;
@@ -1152,8 +1212,20 @@ window.pdfClear=()=>{
   _strokes[''+_pdfPg]=[]; _cmts[''+_pdfPg]=[];
   _saveStr(); _saveCmts(); _rStrokes(); _rCmts();
 };
-function _saveStr(){ localStorage.setItem('dr:'+_pdfSrc,JSON.stringify(_strokes)); }
-function _saveCmts(){ localStorage.setItem('cm:'+_pdfSrc,JSON.stringify(_cmts)); }
+let _annoTimer=null;
+function _flushAnno(){
+  if(!currentAlumno) return;
+  const k=pdfKey(_pdfSrc);
+  if(!alumnoDoc.anotaciones) alumnoDoc.anotaciones={};
+  alumnoDoc.anotaciones[k]={ strokes:_strokes, cmts:_cmts };
+  clearTimeout(_annoTimer);
+  _annoTimer=setTimeout(()=>{
+    updateDoc(doc(db,'alumnos',currentAlumno.pin),{[`anotaciones.${k}`]:alumnoDoc.anotaciones[k]})
+      .catch(e=>console.error('saveAnno:',e));
+  }, 1500);
+}
+function _saveStr(){ _flushAnno(); }
+function _saveCmts(){ _flushAnno(); }
 
 function _rPdfPage(){
   if(!_pdf) return;
@@ -1284,11 +1356,12 @@ function renderEstudios(){
     card.className = 's-card';
     card.style.marginBottom = '12px';
 
-    const colWorked = col.items.filter((_,i) => !!localStorage.getItem(`est_${pin}_${col.id}_${i}`)).length;
+    const colWorked = col.items.filter((_,i) => !!(getEstItem(col.id,i).estado)).length;
 
     const bodyRows = col.items.map((titulo, idx) => {
-      const estado = localStorage.getItem(`est_${pin}_${col.id}_${idx}`) || '';
-      const diff   = parseInt(localStorage.getItem(`est_diff_${pin}_${col.id}_${idx}`)||'0');
+      const itm   = getEstItem(col.id, idx);
+      const estado = itm.estado || '';
+      const diff   = itm.diff || 0;
       const stars  = [1,2,3,4,5].map(n =>
         `<button class="est-star${diff>=n?' on':''}" onclick="setEstDiff('${col.id}',${idx},${n},this.closest('.est-diff-row'))">★</button>`
       ).join('');
@@ -1323,11 +1396,10 @@ function renderEstudios(){
 }
 
 window.setEstudioEstado = (colId, idx, btn, estado) => {
-  const pin = currentAlumno.pin;
-  const key = `est_${pin}_${colId}_${idx}`;
-  const cur = localStorage.getItem(key);
-  const next = cur === estado ? '' : estado;
-  localStorage.setItem(key, next);
+  const itm = getEstItem(colId, idx);
+  const next = itm.estado === estado ? '' : estado;
+  itm.estado = next;
+  _saveEstudios();
   btn.closest('.item-row').querySelectorAll('.status-btn').forEach((b,i) => {
     b.className = 'status-btn ' + (next === ESTADOS[i] ? ESTADOS[i] : '');
     b.style.fontSize = '10px'; b.style.padding = '3px 8px';
@@ -1341,18 +1413,17 @@ window.setEstudioEstado = (colId, idx, btn, estado) => {
   if(card){
     const countEl = card.querySelector('.s-card-count');
     if(countEl && colObj){
-      const worked = colObj.items.filter((_,i2)=>!!localStorage.getItem(`est_${pin}_${colObj.id}_${i2}`)).length;
+      const worked = colObj.items.filter((_,i2)=>!!(getEstItem(colObj.id,i2).estado)).length;
       countEl.textContent = `${worked}/${colObj.items.length}`;
     }
   }
 };
 
 window.setEstDiff = (colId, idx, val, row) => {
-  const pin = currentAlumno.pin;
-  const key = `est_diff_${pin}_${colId}_${idx}`;
-  const cur = parseInt(localStorage.getItem(key)||'0');
-  const next = cur === val ? 0 : val;
-  localStorage.setItem(key, next);
+  const itm = getEstItem(colId, idx);
+  const next = itm.diff === val ? 0 : val;
+  itm.diff = next;
+  _saveEstudios();
   row.querySelectorAll('.est-star').forEach((s,i) => s.classList.toggle('on', i < next));
 };
 
@@ -1789,12 +1860,12 @@ function showAlumnoDetail(pin){
       return `<div class="item-row" style="margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
           <input class="f-input-sm" id="prof-obra-tit-${obra.id}"
-            value="${(localStorage.getItem('obra_tit_'+obra.id)||obra.titulo+( obra.opus?', '+obra.opus:''))}"
+            value="${getObraTitulo(obra)}"
             style="flex:1;min-width:140px;font-family:'Cormorant Garamond',serif;font-size:15px"/>
           <button class="btn-add" style="padding:5px 10px;font-size:11px"
             onclick="renameObraCurso('${obra.id}','${obra.titulo}','${obra.opus}')">Renombrar</button>
           <button class="btn-comment"
-            onclick="openPdf('${pdfEnc}',(localStorage.getItem('obra_tit_'+obra.id)||'${obra.titulo} — ${obra.compositor}'))">📄 Ver / Anotar</button>
+            onclick="openPdf('${pdfEnc}','${obra.titulo} — ${obra.compositor}')">📄 Ver / Anotar</button>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${obra.compositor}</div>
         <div class="yt-section-lbl">Vídeos añadidos (${vids.length})</div>
@@ -1926,7 +1997,9 @@ window.delItem = async (pin, sec, idx) => {
 window.renameObraCurso = (obraId, defaultTitulo, opus) => {
   const nuevo = document.getElementById('prof-obra-tit-'+obraId).value.trim();
   if(!nuevo) return;
-  localStorage.setItem('obra_tit_'+obraId, nuevo);
+  if(!globalConfig.obras[obraId]) globalConfig.obras[obraId]={};
+  globalConfig.obras[obraId].titulo = nuevo;
+  _saveObrasCfg();
   renderObras();
   toast('Nombre actualizado');
 };
