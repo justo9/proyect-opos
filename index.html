@@ -676,8 +676,8 @@ window.logout = async () => {
 function migrateAlumnoLS(){
   const pin = currentAlumno.pin;
 
-  // Anotaciones PDF
-  if(!alumnoDoc.anotaciones){
+  // Anotaciones PDF — migrar si Firestore no tiene nada aún
+  if(!alumnoDoc.anotaciones || Object.keys(alumnoDoc.anotaciones).length === 0){
     const anno = {};
     (window.OBRAS_CURSO_REF||[]).forEach(obra => {
       const encPdf = encodeURIComponent(obra.pdf);
@@ -924,8 +924,10 @@ window.saveTonalidades = async () => {
 
 // ── CURIOSIDADES & RECOMENDACIONES ──────────────────────────
 function getCurCards(){
-  if(globalConfig.curiosidades.cards) return globalConfig.curiosidades.cards;
-  // defaults
+  if(globalConfig.curiosidades.cards && globalConfig.curiosidades.cards.length)
+    return globalConfig.curiosidades.cards;
+  // Defaults solo en memoria — NO se guardan en Firestore automáticamente
+  // El profesor debe usar su panel para persistir cambios
   const defaults = [
     { id:'cur1', tipo:'curiosidad', icon:'🎵', bg:'#1e2d1e', titulo:'La digitación alternativa del saxofón', sub:'Técnica · Acústica', tags:['Técnica','Acústica','Física'], texto:['El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.','Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.'], highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker', videos:[] },
     { id:'cur2', tipo:'curiosidad', icon:'🎷', bg:'#1e1e2d', titulo:'¿Por qué el saxofón es un instrumento transpositor?', sub:'Teoría · Orquestación', tags:['Teoría','Transposición'], texto:['El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esta convención se estableció para que los músicos pudieran cambiar entre saxofones de distintos tamaños usando la misma digitación.','El saxofón tenor está en Si♭ (como la trompeta), mientras que el soprano también es en Si♭ y el barítono en Mi♭, igual que el alto.'], highlight:'Truco: Para saber qué nota real suenas en alto, baja una sexta mayor desde la nota escrita.', videos:[] },
@@ -935,12 +937,15 @@ function getCurCards(){
     { id:'rec1', tipo:'recomendacion', icon:'🎧', bg:'#1e2020', titulo:'Lista de escucha esencial', sub:'Selección del profesor · Saxofón clásico y jazz', tags:[], texto:[], highlight:'', videos:[{url:'https://youtu.be/Qw2bMHvIBAs',label:'Rapsodie — Debussy'},{url:'https://youtu.be/ll3CMgiUPuU',label:'A Love Supreme — Coltrane'},{url:'https://youtu.be/2qhEWelWvLk',label:'Mai — Ryo Noda'}] },
     { id:'rec2', tipo:'recomendacion', icon:'📚', bg:'#201e1e', titulo:'Lecturas recomendadas', sub:'Libros y recursos', tags:[], texto:['The Art of Saxophone Playing (Larry Teal) — Manual técnico de referencia.'], highlight:'', videos:[{url:'https://youtu.be/6_SYdVMHMgw',label:'Saxophone Colossus (documental)'}] },
   ];
-  saveCurCards(defaults);
+  // No guardar automáticamente los defaults
   return defaults;
 }
 
 function saveCurCards(cards){
   globalConfig.curiosidades.cards = cards;
+  // Guardar en localStorage como copia de seguridad local
+  try{ localStorage.setItem('cur_cards', JSON.stringify(cards)); }catch(_){}
+  // Guardar en Firestore para sincronizar entre dispositivos
   setDoc(doc(db,'config','curiosidades'), { cards }).catch(e=>console.error('saveCurCards:',e));
 }
 
@@ -1201,6 +1206,27 @@ function renderObras(){
 let globalConfig = { obras: {}, curiosidades: { cards: null } };
 let _configReady = null;
 
+// Lee las tarjetas de curiosidades del localStorage (fallback)
+function _lsCurCards(){
+  try{ const r=localStorage.getItem('cur_cards'); return r?JSON.parse(r):null; }catch(_){ return null; }
+}
+// Lee la config de obras del localStorage (fallback)
+function _lsObras(){
+  const obras={};
+  (window.OBRAS_CURSO_REF||[]).forEach(obra=>{
+    const vids=localStorage.getItem('yt_'+obra.id);
+    const ejs =localStorage.getItem('ej_'+obra.id);
+    const tit =localStorage.getItem('obra_tit_'+obra.id);
+    if(vids||ejs||tit){
+      obras[obra.id]={};
+      if(vids) try{ obras[obra.id].videos=JSON.parse(vids); }catch(_){}
+      if(ejs)  try{ obras[obra.id].ejercicios=JSON.parse(ejs); }catch(_){}
+      if(tit)  obras[obra.id].titulo=tit;
+    }
+  });
+  return Object.keys(obras).length ? obras : null;
+}
+
 async function loadGlobalConfig(){
   try {
     const [curSnap, obrasSnap] = await Promise.all([
@@ -1208,35 +1234,35 @@ async function loadGlobalConfig(){
       getDoc(doc(db,'config','obras'))
     ]);
 
-    // ── Curiosidades ──
-    if(curSnap.exists() && curSnap.data().cards){
+    // ── Curiosidades: Firestore → localStorage → nada (defaults en memoria) ──
+    if(curSnap.exists() && curSnap.data().cards && curSnap.data().cards.length){
       globalConfig.curiosidades = curSnap.data();
     } else {
-      // Migrate from localStorage if present on this device
-      const lsCards = localStorage.getItem('cur_cards');
-      if(lsCards){ try{ const cards=JSON.parse(lsCards); globalConfig.curiosidades.cards=cards; setDoc(doc(db,'config','curiosidades'),{cards}).catch(()=>{}); }catch(_){} }
+      const lsCards = _lsCurCards();
+      if(lsCards && lsCards.length){
+        globalConfig.curiosidades.cards = lsCards;
+        // Subir a Firestore para sincronizar (silencioso si falla)
+        setDoc(doc(db,'config','curiosidades'),{cards:lsCards}).catch(()=>{});
+      }
+      // Si no hay nada en localStorage tampoco, getCurCards() usará defaults en memoria
     }
 
-    // ── Obras config (videos, ejercicios, títulos) ──
-    if(obrasSnap.exists()){
+    // ── Obras: Firestore → localStorage ──
+    if(obrasSnap.exists() && Object.keys(obrasSnap.data()).length){
       globalConfig.obras = obrasSnap.data();
     } else {
-      // Migrate obra localStorage keys
-      const obras = {};
-      (window.OBRAS_CURSO_REF||[]).forEach(obra => {
-        const vids = localStorage.getItem('yt_'+obra.id);
-        const ejs  = localStorage.getItem('ej_'+obra.id);
-        const tit  = localStorage.getItem('obra_tit_'+obra.id);
-        if(vids||ejs||tit){
-          obras[obra.id]={};
-          if(vids) try{ obras[obra.id].videos=JSON.parse(vids); }catch(_){}
-          if(ejs)  try{ obras[obra.id].ejercicios=JSON.parse(ejs); }catch(_){}
-          if(tit)  obras[obra.id].titulo=tit;
-        }
-      });
-      if(Object.keys(obras).length){ globalConfig.obras=obras; setDoc(doc(db,'config','obras'),obras).catch(()=>{}); }
+      const lsObras = _lsObras();
+      if(lsObras){ globalConfig.obras=lsObras; setDoc(doc(db,'config','obras'),lsObras).catch(()=>{}); }
     }
-  } catch(e){ console.warn('Config fetch failed, using defaults:', e); }
+
+  } catch(e){
+    // Firestore completamente inaccesible → usar localStorage como fallback total
+    console.warn('Config Firestore no disponible, usando localStorage:', e);
+    const lsCards = _lsCurCards();
+    if(lsCards && lsCards.length) globalConfig.curiosidades.cards = lsCards;
+    const lsObras = _lsObras();
+    if(lsObras) globalConfig.obras = lsObras;
+  }
 }
 
 function ensureConfig(){
@@ -1258,9 +1284,26 @@ let _cmts={}, _cmtPos=null;
 window.openPdf = (src, title) => {
   _pdfSrc=src; _pdfPg=1;
   const _ak = pdfKey(src);
-  const _ad = (alumnoDoc.anotaciones && alumnoDoc.anotaciones[_ak]) || {};
-  _strokes = _ad.strokes || {};
-  _cmts    = _ad.cmts    || {};
+  const _fsAnno = alumnoDoc.anotaciones && alumnoDoc.anotaciones[_ak];
+  if(_fsAnno && (_fsAnno.strokes || _fsAnno.cmts)){
+    // Datos en Firestore
+    _strokes = _fsAnno.strokes || {};
+    _cmts    = _fsAnno.cmts    || {};
+  } else {
+    // Fallback: buscar en localStorage con los formatos de clave anteriores
+    const decoded = decodeURIComponent(src);
+    let lsStr={}, lsCmt={};
+    try{ const r=localStorage.getItem('dr:'+src)||localStorage.getItem('dr:'+decoded); if(r) lsStr=JSON.parse(r); }catch(_){}
+    try{ const r=localStorage.getItem('cm:'+src)||localStorage.getItem('cm:'+decoded); if(r) lsCmt=JSON.parse(r); }catch(_){}
+    _strokes = lsStr;
+    _cmts    = lsCmt;
+    // Si hay datos en localStorage, subirlos a Firestore ahora
+    if(Object.keys(lsStr).length || Object.keys(lsCmt).length){
+      if(!alumnoDoc.anotaciones) alumnoDoc.anotaciones={};
+      alumnoDoc.anotaciones[_ak] = { strokes:lsStr, cmts:lsCmt };
+      if(currentAlumno) updateDoc(doc(db,'alumnos',currentAlumno.pin),{[`anotaciones.${_ak}`]:alumnoDoc.anotaciones[_ak]}).catch(()=>{});
+    }
+  }
   const modal=document.getElementById('pdf-modal');
   modal.classList.add('open');
   document.getElementById('pdf-ttl').textContent=title;
