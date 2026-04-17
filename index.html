@@ -929,13 +929,89 @@ function getCurCards(){
   // Defaults solo en memoria — NO se guardan en Firestore automáticamente
   // El profesor debe usar su panel para persistir cambios
   const defaults = [
-    { id:'cur1', tipo:'curiosidad', icon:'🎵', bg:'#1e2d1e', titulo:'La digitación alternativa del saxofón', sub:'Técnica · Acústica', tags:['Técnica','Acústica','Física'], texto:['El saxofón fue patentado por Adolphe Sax en 1846. Su diseño único combina la columna de aire cónica del oboe con la boquilla de caña simple del clarinete, lo que le otorga un timbre extraordinariamente versátil capaz de mimetizar desde la voz humana hasta el sonido de una guitarra eléctrica.','Las digitaciones alternativas permiten obtener el mismo sonido con distintas combinaciones de llaves, facilitando pasajes técnicamente exigentes o consiguiendo sutiles variaciones de color e inflexión.'], highlight:'«El saxofón es el instrumento más cercano a la voz humana» — Charlie Parker', videos:[] },
-    { id:'cur2', tipo:'curiosidad', icon:'🎷', bg:'#1e1e2d', titulo:'¿Por qué el saxofón es un instrumento transpositor?', sub:'Teoría · Orquestación', tags:['Teoría','Transposición'], texto:['El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esta convención se estableció para que los músicos pudieran cambiar entre saxofones de distintos tamaños usando la misma digitación.','El saxofón tenor está en Si♭ (como la trompeta), mientras que el soprano también es en Si♭ y el barítono en Mi♭, igual que el alto.'], highlight:'Truco: Para saber qué nota real suenas en alto, baja una sexta mayor desde la nota escrita.', videos:[] },
-    { id:'cur3', tipo:'curiosidad', icon:'🌊', bg:'#1a2228', titulo:'El vibrato en el saxofón', sub:'Expresión · Estilo', tags:['Expresividad','Vibrato','Estilo'], texto:['A diferencia del vibrato de cuerda o flauta, el vibrato del saxofón clásico se produce principalmente con la mandíbula (jaw vibrato).','En el jazz, el vibrato se usa de forma más espontánea. Escucha la diferencia entre Marcel Mule y John Coltrane.'], highlight:'Ejercicio: Practica el vibrato sobre una nota larga a ♩=60, empezando con 2 oscilaciones por tiempo.', videos:[] },
-    { id:'cur4', tipo:'curiosidad', icon:'🏛️', bg:'#22201a', titulo:'Grandes compositores que escribieron para saxofón', sub:'Historia · Repertorio', tags:['Historia','Repertorio','Clásico'], texto:['Hector Berlioz fue uno de los primeros defensores del saxofón. Luego vinieron obras fundamentales: la Rapsodie de Debussy (1919), la Sinfonía de Glazunov (1934), las piezas de Ibert, Creston y Villa-Lobos.','En el repertorio contemporáneo destacan Luciano Berio, Kaija Saariaho y Georg Friedrich Haas.'], highlight:'Dato: Debussy compuso su Rapsodie para una estudiante americana que tardó 20 años en estrenarla.', videos:[] },
-    { id:'cur5', tipo:'curiosidad', icon:'🎙️', bg:'#1a1e28', titulo:'El saxofón en el jazz', sub:'Historia · Jazz', tags:['Jazz','Historia','Estilos'], texto:['Sidney Bechet y Coleman Hawkins sentaron las bases. Charlie Parker revolucionó la armonía con el bebop. John Coltrane llevó el saxofón al límite con el free jazz.','Hoy artistas como Kamasi Washington y Donny McCaslin siguen expandiendo las fronteras del instrumento.'], highlight:'Escucha: «A Love Supreme» de John Coltrane (1965).', videos:[] },
-    { id:'rec1', tipo:'recomendacion', icon:'🎧', bg:'#1e2020', titulo:'Lista de escucha esencial', sub:'Selección del profesor · Saxofón clásico y jazz', tags:[], texto:[], highlight:'', videos:[{url:'https://youtu.be/Qw2bMHvIBAs',label:'Rapsodie — Debussy'},{url:'https://youtu.be/ll3CMgiUPuU',label:'A Love Supreme — Coltrane'},{url:'https://youtu.be/2qhEWelWvLk',label:'Mai — Ryo Noda'}] },
-    { id:'rec2', tipo:'recomendacion', icon:'📚', bg:'#201e1e', titulo:'Lecturas recomendadas', sub:'Libros y recursos', tags:[], texto:['The Art of Saxophone Playing (Larry Teal) — Manual técnico de referencia.'], highlight:'', videos:[{url:'https://youtu.be/6_SYdVMHMgw',label:'Saxophone Colossus (documental)'}] },
+    {
+      id:'cur_desenclos', tipo:'curiosidad', icon:'🎼', bg:'#1e1a2d',
+      titulo:'Desenclos: dos obras, un mismo lenguaje',
+      sub:'Análisis · Escuela francesa · Siglo XX',
+      tags:['Análisis','Desenclos','Escuela francesa'],
+      texto:[
+        'Las obras Prélude, Cadence et Finale y Fantaisie de Alfred Desenclos comparten una arquitectura neoclásica fundamentada en el lirismo expresivo y una melancolía post-impresionista, donde las secciones iniciales rapsódicas evolucionan hacia finales de un virtuosismo rítmico frenético.',
+        'Ambas piezas sitúan a la cadenza como el núcleo estructural y técnico de la composición, utilizando un lenguaje armónico denso —rico en tensiones cromáticas y acordes extendidos— que exige al intérprete una maestría absoluta tanto en el control de las dinámicas en el registro grave como en la precisión quirúrgica de los pasajes rápidos.',
+      ],
+      highlight:'Desenclos se consolida como el máximo exponente del rigor estético de la escuela francesa del siglo XX para saxofón.',
+      videos:[]
+    },
+    {
+      id:'cur_vibrato', tipo:'curiosidad', icon:'〰️', bg:'#1a2228',
+      titulo:'El vibrato: dos escuelas, dos mundos',
+      sub:'Técnica · Jazz vs Clásico',
+      tags:['Técnica','Vibrato','Jazz','Clásico'],
+      texto:[
+        'En el saxofón clásico, el vibrato se produce principalmente con la mandíbula (jaw vibrato): una oscilación controlada en velocidad y amplitud. La escuela francesa —Marcel Mule, Jean-Marie Londeix— utiliza un vibrato estrecho y rápido que da al sonido densidad y proyección sin alterar el centro de afinación.',
+        'En el jazz el vibrato es mucho más libre: puede ser de mandíbula, de diafragma o una mezcla de ambos, y se aplica de forma expresiva y espontánea. John Coltrane usaba un vibrato amplio y casi vocal en sus baladas; Sonny Rollins lo alternaba con notas completamente secas para crear contraste dramático.',
+      ],
+      highlight:'Escucha y compara: "Dearly Beloved" de Coltrane (vibrato amplio) vs "Concertino da Camera" de Ibert con Mule (vibrato clásico estrecho).',
+      videos:[]
+    },
+    {
+      id:'cur_transpositor', tipo:'curiosidad', icon:'🎷', bg:'#1e1e2d',
+      titulo:'¿Por qué el saxofón es transpositor?',
+      sub:'Teoría · Orquestación',
+      tags:['Teoría','Transposición'],
+      texto:[
+        'El saxofón alto está afinado en Mi♭: cuando lees un Do escrito, suenas un Mi♭ real. Esta convención permite que un músico use la misma digitación en cualquier saxofón (soprano, alto, tenor, barítono) aunque suenen en tonalidades distintas.',
+        'El saxofón tenor está en Si♭ (como la trompeta); el soprano también en Si♭; el barítono en Mi♭ como el alto. Para tocar en Do M de concierto, el saxo alto lee en La M (3 sostenidos) y el tenor en Re M (2 sostenidos).',
+      ],
+      highlight:'Truco: para saber qué nota real suenas en alto, baja una sexta mayor desde la nota escrita.',
+      videos:[]
+    },
+    {
+      id:'cur_jazz', tipo:'curiosidad', icon:'🎙️', bg:'#1a1e28',
+      titulo:'El saxofón en el jazz',
+      sub:'Historia · De Nueva Orleans al free jazz',
+      tags:['Jazz','Historia','Estilos'],
+      texto:[
+        'Sidney Bechet (soprano) y Coleman Hawkins (tenor) sentaron las bases en los años 20 y 30. Charlie Parker revolucionó la armonía con el bebop en los 40: frases veloces, cromatismo extremo, nuevas sustituciones de acordes. John Coltrane llevó el instrumento al límite con el hard bop, el modal y el free jazz.',
+        'Hoy artistas como Kamasi Washington, Donny McCaslin o Ravi Coltrane mezclan jazz, electrónica y world music en propuestas que siguen expandiendo las fronteras del instrumento.',
+      ],
+      highlight:'Escucha: «A Love Supreme» de John Coltrane (1965) — uno de los discos más influyentes de la historia de la música.',
+      videos:[]
+    },
+    {
+      id:'rec_bird', tipo:'recomendacion', icon:'🎬', bg:'#1a1e1a',
+      titulo:'Bird (1988) — Clint Eastwood',
+      sub:'Recomendación · Cine · Charlie Parker',
+      tags:[],
+      texto:[
+        'Película biográfica dirigida por Clint Eastwood sobre la vida de Charlie Parker, el genio del bebop. Retrata sin concesiones su genialidad musical y su autodestrucción, con una banda sonora construida a partir de grabaciones reales de Parker restauradas digitalmente.',
+        'Ganadora del César a la mejor película extranjera y del BAFTA a la mejor banda sonora. Forest Whitaker ganó el premio al mejor actor en Cannes por su interpretación de Parker.',
+      ],
+      highlight:'Imprescindible para entender de dónde viene la forma de frasear moderna en el saxofón.',
+      videos:[]
+    },
+    {
+      id:'rec_escucha', tipo:'recomendacion', icon:'🎧', bg:'#1e2020',
+      titulo:'Lista de escucha esencial',
+      sub:'Selección del profesor · Saxofón clásico y jazz',
+      tags:[],
+      texto:[],
+      highlight:'',
+      videos:[
+        {url:'https://youtu.be/Qw2bMHvIBAs', label:'Rapsodie pour saxophone — Debussy'},
+        {url:'https://youtu.be/lV7TKJGBPZA', label:'Concerto — Glazunov'},
+        {url:'https://youtu.be/ll3CMgiUPuU', label:'A Love Supreme — Coltrane'},
+        {url:'https://youtu.be/2qhEWelWvLk', label:'Mai — Ryo Noda'},
+      ]
+    },
+    {
+      id:'rec_lecturas', tipo:'recomendacion', icon:'📚', bg:'#201e1e',
+      titulo:'Lecturas recomendadas',
+      sub:'Libros y recursos sobre saxofón',
+      tags:[],
+      texto:['The Art of Saxophone Playing (Larry Teal) — manual técnico de referencia para saxofonistas clásicos.'],
+      highlight:'',
+      videos:[{url:'https://youtu.be/6_SYdVMHMgw', label:'Saxophone Colossus — documental Sonny Rollins'}]
+    },
   ];
   // No guardar automáticamente los defaults
   return defaults;
