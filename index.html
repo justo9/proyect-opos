@@ -574,7 +574,7 @@ const SECCIONES = [
   { id:'transcripciones', label:'Transcripciones',  icon:'✍️', color:'#5a3a20' },
 ];
 
-const OBRAS_CURSO = [
+const OBRAS_CURSO = window.OBRAS_CURSO_REF = [
   { id:'creston', titulo:'Sonata para Saxofón Alto', compositor:'Paul Creston', opus:'Op. 19',  pdf:'CRESTON-SONATA-Alto-Sax-Complete.pdf' },
   { id:'mai',     titulo:'Mai',                      compositor:'Ryo Noda',      opus:'',        pdf:'MAI RYO NODA.pdf' },
 ];
@@ -591,7 +591,7 @@ const TECNICAS = [
   { id:'respiracion',    name:'Respiración circular', desc:'Sonido continuo sin pausas',          icon:'∞',  color:'#2a2a2a' },
 ];
 
-const COLECCIONES_ESTUDIOS = [
+const COLECCIONES_ESTUDIOS = window.COLECCIONES_ESTUDIOS_REF = [
   {
     id: 'senon',
     label: '16 Estudios',
@@ -672,8 +672,58 @@ window.logout = async () => {
   showScreen('s-login');
 };
 
+// ── MIGRACIÓN localStorage → Firestore (una sola vez por dispositivo) ──
+function migrateAlumnoLS(){
+  const pin = currentAlumno.pin;
+
+  // Anotaciones PDF
+  if(!alumnoDoc.anotaciones){
+    const anno = {};
+    (window.OBRAS_CURSO_REF||[]).forEach(obra => {
+      const encPdf = encodeURIComponent(obra.pdf);
+      // try both encoded and non-encoded src variants
+      ['dr:'+obra.pdf,'dr:'+encPdf].forEach(k=>{
+        const raw = localStorage.getItem(k);
+        if(raw){ try{ const s=JSON.parse(raw); const pk=pdfKey(encPdf); if(!anno[pk]) anno[pk]={}; anno[pk].strokes=s; }catch(_){} }
+      });
+      ['cm:'+obra.pdf,'cm:'+encPdf].forEach(k=>{
+        const raw = localStorage.getItem(k);
+        if(raw){ try{ const c=JSON.parse(raw); const pk=pdfKey(encPdf); if(!anno[pk]) anno[pk]={}; anno[pk].cmts=c; }catch(_){} }
+      });
+    });
+    if(Object.keys(anno).length){
+      alumnoDoc.anotaciones = anno;
+      const upd = {};
+      Object.entries(anno).forEach(([k,v])=>{ upd[`anotaciones.${k}`]=v; });
+      updateDoc(doc(db,'alumnos',pin), upd).catch(e=>console.error('migrateAnno:',e));
+    }
+  }
+
+  // Estudios (estrellas + estado)
+  if(!alumnoDoc.estudios){
+    const estudios = {};
+    let hasData = false;
+    (window.COLECCIONES_ESTUDIOS_REF||[]).forEach(col=>{
+      col.items.forEach((_,idx)=>{
+        const estado = localStorage.getItem(`est_${pin}_${col.id}_${idx}`);
+        const diff   = localStorage.getItem(`est_diff_${pin}_${col.id}_${idx}`);
+        if(estado||diff){
+          if(!estudios[col.id]) estudios[col.id]={};
+          estudios[col.id][idx]={ estado:estado||'', diff:diff?parseInt(diff):0 };
+          hasData=true;
+        }
+      });
+    });
+    if(hasData){
+      alumnoDoc.estudios = estudios;
+      updateDoc(doc(db,'alumnos',pin),{estudios}).catch(e=>console.error('migrateEstudios:',e));
+    }
+  }
+}
+
 // ── ALUMNO APP ───────────────────────────────────────────────
 function showAlumnoApp(){
+  migrateAlumnoLS();
   const d = alumnoDoc;
   const inicial = (d.nombre||'A')[0].toUpperCase();
   const hdrAvatar = document.getElementById('hdr-avatar');
@@ -1157,8 +1207,35 @@ async function loadGlobalConfig(){
       getDoc(doc(db,'config','curiosidades')),
       getDoc(doc(db,'config','obras'))
     ]);
-    if(curSnap.exists() && curSnap.data().cards) globalConfig.curiosidades = curSnap.data();
-    if(obrasSnap.exists()) globalConfig.obras = obrasSnap.data();
+
+    // ── Curiosidades ──
+    if(curSnap.exists() && curSnap.data().cards){
+      globalConfig.curiosidades = curSnap.data();
+    } else {
+      // Migrate from localStorage if present on this device
+      const lsCards = localStorage.getItem('cur_cards');
+      if(lsCards){ try{ const cards=JSON.parse(lsCards); globalConfig.curiosidades.cards=cards; setDoc(doc(db,'config','curiosidades'),{cards}).catch(()=>{}); }catch(_){} }
+    }
+
+    // ── Obras config (videos, ejercicios, títulos) ──
+    if(obrasSnap.exists()){
+      globalConfig.obras = obrasSnap.data();
+    } else {
+      // Migrate obra localStorage keys
+      const obras = {};
+      (window.OBRAS_CURSO_REF||[]).forEach(obra => {
+        const vids = localStorage.getItem('yt_'+obra.id);
+        const ejs  = localStorage.getItem('ej_'+obra.id);
+        const tit  = localStorage.getItem('obra_tit_'+obra.id);
+        if(vids||ejs||tit){
+          obras[obra.id]={};
+          if(vids) try{ obras[obra.id].videos=JSON.parse(vids); }catch(_){}
+          if(ejs)  try{ obras[obra.id].ejercicios=JSON.parse(ejs); }catch(_){}
+          if(tit)  obras[obra.id].titulo=tit;
+        }
+      });
+      if(Object.keys(obras).length){ globalConfig.obras=obras; setDoc(doc(db,'config','obras'),obras).catch(()=>{}); }
+    }
   } catch(e){ console.warn('Config fetch failed, using defaults:', e); }
 }
 
