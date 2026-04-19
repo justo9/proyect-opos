@@ -286,6 +286,7 @@
     .ton-half.ton-half-min{border-top:1px solid var(--border);color:var(--text2);font-weight:500}
     .ton-half.en-proceso{background:rgba(212,162,76,.18);color:var(--amber)}
     .ton-half.trabajado{background:rgba(76,175,130,.2);color:#4caf82}
+    .ton-cell.completo{border-color:#4caf82;background:rgba(76,175,130,.12)}
     .ton-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .ton-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
     .ton-leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
@@ -865,6 +866,8 @@ function renderTonalidades(){
         halfMaj.className = 'ton-half ton-half-maj ' + next;
         if(!alumnoDoc.tonalidades) alumnoDoc.tonalidades = {};
         alumnoDoc.tonalidades[majKey] = next;
+        const curMin = alumnoDoc.tonalidades[minKey] || '';
+        cell.classList.toggle('completo', next === 'trabajado' && curMin === 'trabajado');
         updateTonCount();
       };
 
@@ -878,9 +881,12 @@ function renderTonalidades(){
         halfMin.className = 'ton-half ton-half-min ' + next;
         if(!alumnoDoc.tonalidades) alumnoDoc.tonalidades = {};
         alumnoDoc.tonalidades[minKey] = next;
+        const curMaj = alumnoDoc.tonalidades[majKey] || '';
+        cell.classList.toggle('completo', next === 'trabajado' && curMaj === 'trabajado');
         updateTonCount();
       };
 
+      if(majState === 'trabajado' && minState === 'trabajado') cell.classList.add('completo');
       cell.innerHTML = svg;
       cell.appendChild(halfMaj);
       cell.appendChild(halfMin);
